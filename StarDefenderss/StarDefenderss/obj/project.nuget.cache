@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "jOi4kMfO5JoTLq6urL+lIpjstHdVeHmsP/CLVZ0dl/JMMfWe1RjLf+PCGyMGCuqyb3RqoFHsxL9Z4Cg63jpFlg==",
+  "dgSpecHash": "y7UGEAv39H8SwaMdfiZIxXmnYKS7diWUq9FJZFRCwTeo5DuL2Ow3LT5sXtMTo25M2i9BLVqQIN64VcX0VaUFhw==",
   "success": true,
-  "projectFilePath": "C:\\Users\\Admin\\RiderProjects\\StarDefenderss\\StarDefenderss\\StarDefenderss.csproj",
+  "projectFilePath": "C:\\Users\\Admin\\RiderProjects\\Star-Defenders\\StarDefenderss\\StarDefenderss\\StarDefenderss.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Admin\\.nuget\\packages\\libuv\\1.9.1\\libuv.1.9.1.nupkg.sha512",
     "C:\\Users\\Admin\\.nuget\\packages\\microsoft.codeanalysis.analyzers\\1.1.0\\microsoft.codeanalysis.analyzers.1.1.0.nupkg.sha512",

@@ -1,15 +1,17 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
 namespace StarDefenderss;
 
-public class Game1 : Game
+public class GameCycleView : Game,IGameplayView
 {
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
     private Field _field;
-    public Game1()
+    public event EventHandler CycleFinished;
+    public GameCycleView()
     {
         _graphics = new GraphicsDeviceManager(this);
         Content.RootDirectory = "Content";
@@ -18,8 +20,6 @@ public class Game1 : Game
 
     protected override void Initialize()
     {
-        // TODO: Add your initialization logic here
-
         base.Initialize();
     }
 
@@ -47,5 +47,8 @@ public class Game1 : Game
         _field.Draw(_spriteBatch);
         _spriteBatch.End();
         base.Draw(gameTime);
+    }
+    public void LoadGameCycleParameters()
+    {
     }
 }
