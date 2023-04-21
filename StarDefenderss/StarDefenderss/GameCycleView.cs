@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -7,10 +8,13 @@ namespace StarDefenderss;
 
 public class GameCycleView : Game,IGameplayView
 {
+    private Dictionary<int, IObject> _objects = new ();
+    private Dictionary<int, Texture2D> _textures = new ();
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
     private Field _field;
     public event EventHandler CycleFinished;
+
     public GameCycleView()
     {
         _graphics = new GraphicsDeviceManager(this);
@@ -27,6 +31,7 @@ public class GameCycleView : Game,IGameplayView
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
         _field = new Field(10, 10, Content.Load<Texture2D>("square"), 64);
+        // _textures.Add(1, Content.Load<Texture2D>("square"));
     }
 
     protected override void Update(GameTime gameTime)
@@ -44,11 +49,16 @@ public class GameCycleView : Game,IGameplayView
     {
         GraphicsDevice.Clear(Color.CornflowerBlue);
         _spriteBatch.Begin();
-        _field.Draw(_spriteBatch);
+        _field.Draw(_spriteBatch); 
+        //foreach (var o in _objects.Values)
+        //{
+         //   _spriteBatch.Draw(_textures[o.ImageId],  o.Pos, Color.White);
+       // }  		
         _spriteBatch.End();
         base.Draw(gameTime);
     }
-    public void LoadGameCycleParameters()
+    public void LoadGameCycleParameters(Dictionary<int, IObject> Objects)
     {
+        _objects = Objects;  
     }
 }

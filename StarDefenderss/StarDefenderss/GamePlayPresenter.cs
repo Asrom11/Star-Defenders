@@ -15,12 +15,14 @@ public class GameplayPresenter
 
         _gameplayView.CycleFinished += ViewModelUpdate;
         _gameplayModel.Updated += ModelViewUpdate;
+        
+        _gameplayModel.Initialize();
 
     }
     
     private void ModelViewUpdate(object sender, GameplayEventArgs e)
     {
-        _gameplayView.LoadGameCycleParameters();
+        _gameplayView.LoadGameCycleParameters(e.Objects);
     }
 
     private void ViewModelUpdate(object sender, EventArgs e)
