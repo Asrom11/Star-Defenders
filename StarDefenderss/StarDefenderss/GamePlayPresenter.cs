@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Xna.Framework;
 
 namespace StarDefenderss;
 
@@ -6,6 +7,7 @@ public class GameplayPresenter
 {
     private IGameplayView _gameplayView;
     private IGameplayModel _gameplayModel;
+
 
     public GameplayPresenter(IGameplayView gameplayView, 
         IGameplayModel gameplayModel)
@@ -15,9 +17,8 @@ public class GameplayPresenter
 
         _gameplayView.CycleFinished += ViewModelUpdate;
         _gameplayModel.Updated += ModelViewUpdate;
-        
+        _gameplayView.EnemyMoved += ViewModelMove;
         _gameplayModel.Initialize();
-
     }
     
     private void ModelViewUpdate(object sender, GameplayEventArgs e)
@@ -29,7 +30,10 @@ public class GameplayPresenter
     {
         _gameplayModel.Update();
     }
-
+    private void ViewModelMove(object sender, EnemyMovedEventArgs e)
+    {
+        _gameplayModel.MoveEnemy(e.GameTime);
+    }
     public void LaunchGame()
     {
         _gameplayView.Run();

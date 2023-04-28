@@ -2,6 +2,7 @@
 //game.Run();
 
 using System;
+using Microsoft.Xna.Framework;
 using StarDefenderss;
 
 public static class Program
@@ -13,8 +14,7 @@ public static class Program
         //var game = new GameCycleView();
         //game.Run();         
         var game = new GameplayPresenter(
-            new GameCycleView(), new GameCycle()
-        );
+            new GameCycleView(), new GameCycle());
         game.LaunchGame();
     }
 }
