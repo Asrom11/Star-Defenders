@@ -11,11 +11,16 @@ public class Operator: Character, IObject
     public override int Defense { get; set; }
     public override int DamageResistance { get; set; }
     public override int GuaranteedAttack { get; set; }
+    public Color Color { get; set; }
     public Vector2 Pos{ get; set; }
     private Vector2 _endPosition;
-    public Operator(int healthPoints, int attack, int defense, int speed,  int damageResistance,
+
+    public Operator(int healthPoints, int attack, int defense, int speed, int damageResistance,
         Vector2 position, int guaranteedAttack) : base(healthPoints, attack, defense, speed, damageResistance,
-        position, guaranteedAttack) {}
+        position, guaranteedAttack)
+    {
+        Color = Color.White;
+    }
 
     public void Update()
     {

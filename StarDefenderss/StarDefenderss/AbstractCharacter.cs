@@ -6,7 +6,7 @@ namespace StarDefenderss;
 
 public abstract class Character
 {
-    public int ImageId { get; set; }
+    public GameObjects ImageId { get; set; }
     public int UnicId { get; set; }
     public void Update(GameTime gameTime)
     {

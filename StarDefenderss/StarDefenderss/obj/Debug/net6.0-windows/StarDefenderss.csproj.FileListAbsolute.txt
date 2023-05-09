@@ -75,3 +75,5 @@ C:\Users\Admin\RiderProjects\Star-Defenders\StarDefenderss\StarDefenderss\obj\De
 C:\Users\Admin\RiderProjects\Star-Defenders\StarDefenderss\StarDefenderss\obj\Debug\net6.0-windows\StarDefenderss.genruntimeconfig.cache
 C:\Users\Admin\RiderProjects\Star-Defenders\StarDefenderss\StarDefenderss\obj\Debug\net6.0-windows\ref\StarDefenderss.dll
 C:\Users\Admin\RiderProjects\Star-Defenders\StarDefenderss\StarDefenderss\bin\Debug\net6.0-windows\Content\tempEnemy.xnb
+C:\Users\Admin\RiderProjects\Star-Defenders\StarDefenderss\StarDefenderss\bin\Debug\net6.0-windows\Content\Grass.xnb
+C:\Users\Admin\RiderProjects\Star-Defenders\StarDefenderss\StarDefenderss\bin\Debug\net6.0-windows\Content\Path.xnb

@@ -10,10 +10,9 @@ namespace StarDefenderss;
 public class GameCycleView : Game, IGameplayView
 {
     private Dictionary<int, IObject> _objects = new();
-    private Dictionary<int, Texture2D> _textures = new();
+    private Dictionary<GameObjects, Texture2D> _textures = new();
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
-    private Field _field;
     private float elapsedTime;
     public event EventHandler CycleFinished;
     public event EventHandler<EnemyMovedEventArgs> EnemyMoved;
@@ -38,10 +37,10 @@ public GameCycleView()
     protected override void LoadContent()
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
-        _field = new Field(10, 14, Content.Load<Texture2D>("square"));
-        Enemy.Texture2D = Content.Load<Texture2D>("tempEnemy");
-        _textures.Add(1, Content.Load<Texture2D>("square"));
-        _textures.Add(2,Content.Load<Texture2D>("tempEnemy"));
+        _textures.Add(GameObjects.Base, Content.Load<Texture2D>("square"));
+        _textures.Add(GameObjects.Enemy,Content.Load<Texture2D>("tempEnemy"));
+        _textures.Add(GameObjects.Wall, Content.Load<Texture2D>("Grass"));
+        _textures.Add(GameObjects.Path,Content.Load<Texture2D>("Path"));
     }
 
     protected override void Update(GameTime gameTime)
@@ -63,8 +62,6 @@ public GameCycleView()
     {
         GraphicsDevice.Clear(Color.CornflowerBlue);
         _spriteBatch.Begin();
-        _field.Draw(_spriteBatch);
-
         lock (_objects)
             foreach (var o in _objects.Values) 
             {

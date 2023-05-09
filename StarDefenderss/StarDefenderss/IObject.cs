@@ -4,7 +4,7 @@ namespace StarDefenderss;
 
 public interface IObject
 {
-    int ImageId { get; set; }
+    GameObjects ImageId { get; set; }
 
     int UnicId
     {
@@ -12,7 +12,9 @@ public interface IObject
         set;
     }
 
+    Color Color { get; set;}
+
     Vector2 Pos { get; set; }
 
-    void Update(GameTime gameTime);  
+    void Update(GameTime gameTime);
 }
