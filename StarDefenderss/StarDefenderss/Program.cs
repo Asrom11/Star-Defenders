@@ -2,7 +2,9 @@
 //game.Run();
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using StarDefenderss;
 
 public static class Program
@@ -12,9 +14,10 @@ public static class Program
     {
         //using (var game = new GameCycleView())
         //var game = new GameCycleView();
-        //game.Run();         
+        //game.Run();
+        var characterTextures = new List<Texture2D>();
         var game = new GameplayPresenter(
-            new GameCycleView(), new GameCycle());
+            new GameCycleView(characterTextures), new GameCycle());
         game.LaunchGame();
     }
 }

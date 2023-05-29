@@ -77,3 +77,7 @@ C:\Users\Admin\RiderProjects\Star-Defenders\StarDefenderss\StarDefenderss\obj\De
 C:\Users\Admin\RiderProjects\Star-Defenders\StarDefenderss\StarDefenderss\bin\Debug\net6.0-windows\Content\tempEnemy.xnb
 C:\Users\Admin\RiderProjects\Star-Defenders\StarDefenderss\StarDefenderss\bin\Debug\net6.0-windows\Content\Grass.xnb
 C:\Users\Admin\RiderProjects\Star-Defenders\StarDefenderss\StarDefenderss\bin\Debug\net6.0-windows\Content\Path.xnb
+C:\Users\Admin\RiderProjects\Star-Defenders\StarDefenderss\StarDefenderss\bin\Debug\net6.0-windows\Content\font.xnb
+C:\Users\Admin\RiderProjects\Star-Defenders\StarDefenderss\StarDefenderss\bin\Debug\net6.0-windows\Content\firstOper.xnb
+C:\Users\Admin\RiderProjects\Star-Defenders\StarDefenderss\StarDefenderss\bin\Debug\net6.0-windows\Content\tankOper.xnb
+C:\Users\Admin\RiderProjects\Star-Defenders\StarDefenderss\StarDefenderss\bin\Debug\net6.0-windows\Content\Direction.xnb
