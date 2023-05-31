@@ -1,12 +1,16 @@
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
 namespace StarDefenderss;
 
-public class TankOperator: Character, IObject
+public class TankOperator: Character, IObject, IAttackable
 {
-    public override int HealthPoints { get; set; }
+    public override Direction Direction { get; set; }
     public override int Speed { get; set; }
+    public Vector2 Position { get; }
+    public float AttackRange { get; }
     public override int Attack { get; set; }
+    public Grid _grid { get; set; }
     public override int Defense { get; set; }
     public override int DamageResistance { get; set; }
     public override int GuaranteedAttack { get; set; }
@@ -17,11 +21,15 @@ public class TankOperator: Character, IObject
     public Direction dir { get; set; }
     public bool IsSpawned { get; set; }
 
-    public TankOperator(int healthPoints, int attack, int defense, int speed, int damageResistance, Vector2 position, int guaranteedAttack, int currency, GameObjects OperatorType) : base(healthPoints, attack, defense, speed, damageResistance, position, guaranteedAttack, OperatorType, currency)
+    public TankOperator(int healthPoints, int attack, int defense, int speed, int damageResistance, Vector2 position, int guaranteedAttack, int currency, GameObjects OperatorType) : 
+        base(healthPoints, attack, defense, speed, damageResistance, position, guaranteedAttack, OperatorType, currency, Color.Blue)
     {
         Currency = currency;
         Color = Color.White;
         Scale = 1f;
+    }
+    public void Update(GameTime gameTime)
+    {
     }
 }
 

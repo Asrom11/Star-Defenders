@@ -7,16 +7,16 @@ namespace StarDefenderss;
 
 public interface IGameplayView
 {
-    event EventHandler CycleFinished;
-    event EventHandler<EnemyMovedEventArgs> EnemyMoved;
+    event EventHandler<CycleHasFinished> CycleFinished;
     event EventHandler<CharacterSpawnedEventArgs> CharacterSpawned;
 
-    void LoadGameCycleParameters(Dictionary<int, IObject> Objects, Dictionary<int, IObject> EnemyObjects);
+    void LoadGameCycleParameters(Dictionary<int, IObject> Objects);
 
     void LoadCurrencyValue(int currentCurrency);
     void Run();
 }
-public class EnemyMovedEventArgs : EventArgs
+
+public class CycleHasFinished :EventArgs
 {
     public GameTime GameTime { get; set; } 
 }

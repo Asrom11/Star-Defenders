@@ -16,19 +16,16 @@ namespace StarDefenderss;
 public class GameCycle: IGameplayModel
 {
     private const int TileSize = 40;
-
-    public int PlayerId { get; set; }
     public int Currency { get; set; }
     public event EventHandler<CharacterSpawnedEventArgs> CharacterSelected;
     public Dictionary<int, IObject> Objects { get; set; }
-    public Dictionary<int, IObject> EnemyObjects { get; set; }
+    public Dictionary<int, IObject> Enemys { get; set; }
+    private Grid _grid;
     public event EventHandler<GameplayEventArgs> Updated;
-    public event EventHandler<EnemyMovedEventArgs> EnemyMoved;
     public event EventHandler<CurrencyEventArgs> CurrencyChange;
-    private List<Operator> characters;
+    
     private Timer _spawnTimer;
     private Timer _currencyTimer;
-    
     private int _currentId = 1;
     private Vector2 BasePos;
     private Vector2 EnemyPos;
@@ -37,8 +34,8 @@ public class GameCycle: IGameplayModel
     private const float spawnInterval = 1000;
     private const float currencyInterval = 100;
     private const int valuetAdd = 5;
-    private  int shirina;
-    private  int visota;
+    private  int width;
+    private  int height;
     private GameObjects selectedDirection = 0;
 
     private Dictionary<Keys, GameObjects> _keyDirectionMap = new()
@@ -59,8 +56,8 @@ public class GameCycle: IGameplayModel
     private Dictionary<GameObjects, Vector2> _directionOffsetMap = new()
     {
         { GameObjects.Up, new Vector2(0, -TileSize) },
-        { GameObjects.Down, new Vector2(TileSize, TileSize) },
-        { GameObjects.Left, new Vector2(0, TileSize*2) },
+        { GameObjects.Down, new Vector2(0, TileSize) },
+        { GameObjects.Left, new Vector2(-TileSize, 0) },
         { GameObjects.Right, new Vector2(TileSize, 0) }
     };
     
@@ -71,16 +68,17 @@ public class GameCycle: IGameplayModel
         var textMap = MapLoader.Load(LevelName.LevelFirst);
         var lines = textMap.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
         Objects = new Dictionary<int, IObject>();
-        EnemyObjects = new Dictionary<int, IObject>();
+        Enemys = new Dictionary<int, IObject>();
+        width = lines[0].Length;
+        height = lines.Length;
         InitializeMap(lines);
         InitializeGraph(lines);
-        shirina = lines[0].Length;
-        visota = lines.Length;
-        _spawnTimer = new Timer (spawnInterval);
+        _grid = new Grid(TileSize);
         _currencyTimer = new Timer(currencyInterval);
+        _spawnTimer = new Timer(currencyInterval);
         _currencyTimer.Elapsed += AddCurrency;
         _spawnTimer.Elapsed += SpawnEnemy; 
-        _spawnTimer.AutoReset = true; 
+        _spawnTimer.AutoReset = false; 
         _currencyTimer.AutoReset = true;
         _currencyTimer.Start();
         _spawnTimer.Start (); 
@@ -91,8 +89,8 @@ public class GameCycle: IGameplayModel
         for (var y = 0; y < lines.Length; y++)
         for (var x = 0; x < lines[0].Length; x++)
         {
-            var generatedObject = GenerateObject(
-                lines[x][y], x, y);
+            var generatedObject = MapGenerator.GenerateObject(
+                lines[x][y], x, y, ref EnemyPos, ref BasePos);
             Objects.Add(_currentId, generatedObject);
             _currentId++;
         }
@@ -105,8 +103,6 @@ public class GameCycle: IGameplayModel
 
     private void InitializeGraph(string[] lines)
     {
-        var width = TileSize;
-        var height = TileSize;
         _nodes = new Node[width, height];
 
         for (var x = 0; x < width; x++)
@@ -130,104 +126,48 @@ public class GameCycle: IGameplayModel
             }
         }
     }
-    public void Update()
+    public void Update(GameTime gameTime)
     {
-        Updated.Invoke(this, new GameplayEventArgs { Objects = this.Objects, EnemyObjects = this.EnemyObjects });
+        MoveEnemy(gameTime);
+        Updated.Invoke(this, new GameplayEventArgs { Objects = this.Objects});
     }
 
     public void MoveEnemy(GameTime gameTime)
     {
-        lock (Objects)
-            foreach (var enemy in EnemyObjects.Values)
-            {
-                enemy.Update(gameTime);
-            }
+        foreach (var enemy in Enemys.Values)
+        {
+            enemy.Update(gameTime);
+        }
     }
     
     private void SpawnEnemy (object sender, ElapsedEventArgs e)
     {
         var nodeEnemy = _nodes[(int)(EnemyPos.X / TileSize), (int)(EnemyPos.Y / TileSize)];
         var nodeBase = _nodes[(int)BasePos.X / TileSize, (int)BasePos.Y / TileSize];
-        lock (Objects)
-        {
-            var enemy = new Enemy(100, 1, 2, 4, 0, EnemyPos, nodeEnemy, 3, nodeBase, TileSize, GameObjects.Enemy);
-            _currentId++;
-            EnemyObjects.Add (_currentId, enemy);
-            Objects.Add(_currentId,enemy);
-        }
+        var enemy = new Enemy(100, 1, 2, 4, 0, EnemyPos, nodeEnemy, 3, nodeBase, TileSize, GameObjects.Enemy);
+        _currentId++;
+        enemy._grid = _grid;
+        Enemys.Add (_currentId,enemy);
+        Objects.Add(_currentId,enemy);
     }
-    
-    private IObject GenerateObject (
-        char sign, int xTile, int yTile)
-    {
-        IObject generatedObject = null;
-        switch (sign)
-        {
-            case 'T':
-                generatedObject = CreateBase(GameObjects.Base, xTile * TileSize,yTile * TileSize, Color.Red,false);
-                EnemyPos = new Vector2(xTile * TileSize,yTile * TileSize) ;
-                break;
-            case 'C':
-                generatedObject = CreateBase(GameObjects.Base, xTile * TileSize,yTile * TileSize, Color.Blue, true);
-                BasePos = new Vector2(xTile * TileSize,yTile * TileSize);
-                break;
-            case 'W':
-                generatedObject = CreateWall(GameObjects.Wall, xTile * TileSize,yTile * TileSize, Color.White);
-                break;
-            default:
-                generatedObject = CreatePath(GameObjects.Path, xTile*TileSize, yTile*TileSize, Color.White);
-                break;
-        }
-        return generatedObject;
-    }
-    
-    private Base CreateBase(GameObjects ImageId, int x, int y, Color color,bool isEnemyBase)
-    {
-        return new Base()
-        {
-            Pos = new Vector2(x,
-                y ),
-            ImageId = ImageId,
-            isEnemyBase = isEnemyBase,
-            Color = color
-        };
-    }
-    
-    private Path CreatePath(GameObjects ImageId, int x, int y, Color color)
-    {
-        return new Path()
-        {
-            Pos = new Vector2(x ,
-                y  ),
-            ImageId = ImageId,
-            Color = color
-        };
-    }
-    
-    private Wall CreateWall(GameObjects ImageId, int x, int y, Color color)
-    {
-        return new Wall()
-        {
-            Pos = new Vector2(x ,
-                y  ),
-            ImageId = ImageId,
-            Color = color
-        };
-    }
+    //todo Исправить, чтобы не предевали Iobject, а лишь ID и позицию,  чтобы каст убрать.
     public void SpawnCharacter(Vector2 position, IObject charactere)
     {
         if (!IsMousePositionOnTileMap(position) || Currency < charactere.Currency || charactere.IsSpawned) return;
+        
         Currency -= charactere.Currency;
-        lock (Objects)
+        position.X = (int) position.X / TileSize;
+        position.Y = (int) position.Y / TileSize;
+        _currentId++; 
+        charactere.Pos = position * TileSize;
+        var dir = new Direction { ImageId = GameObjects.Ditection, Pos = charactere.Pos };
+        HandleDirectionSelection(dir);
+        charactere.IsSpawned = true;
+        Objects.Add(_currentId,charactere);
+        if (charactere is IAttackable attackableCharacter)
         {
-            position.X = (int) position.X / TileSize;
-            position.Y = (int) position.Y / TileSize;
-            _currentId++; 
-            charactere.Pos = position * TileSize;
-            var dir = new Direction { ImageId = GameObjects.Ditection, Pos = charactere.Pos };
-            HandleDirectionSelection(dir);
-            charactere.IsSpawned = true;
-            Objects.Add(_currentId,charactere);
+            attackableCharacter._grid = _grid;
+            _grid.Add(attackableCharacter);
         }
     }
     private bool IsMousePositionOnTileMap(Vector2 mousePosition)
@@ -237,8 +177,8 @@ public class GameCycle: IGameplayModel
         mousePosition.X = (int) mousePosition.X / TileSize;
         mousePosition.Y = (int) mousePosition.Y / TileSize;
 
-        var tileMapWidth = shirina;
-        var tileMapHeight = visota;
+        var tileMapWidth = width;
+        var tileMapHeight = height;
         return mousePosition.X >= tileMapX && mousePosition.X  < tileMapX + tileMapWidth  &&
                mousePosition.Y >= tileMapY && mousePosition.Y < tileMapY + tileMapHeight ;
     }
@@ -249,22 +189,18 @@ public class GameCycle: IGameplayModel
         {
             foreach (var kvp in _keyDirectionMap)
             {
-                if (InputManager.IsKeyPressed(kvp.Key))
-                {
-                    selectedDirection = kvp.Value;
-                    break;
-                }
+                if (!InputManager.IsKeyPressed(kvp.Key)) continue;
+                
+                selectedDirection = kvp.Value;
+                break;
             }
             await Task.Delay(1);
         }
-
+        
         direction.Rotation = _directionRotationMap[selectedDirection];
         direction.Pos += _directionOffsetMap[selectedDirection];
-        lock (Objects)
-        {
-            _currentId++;
-            Objects.Add(_currentId,direction);
-        }
+        _currentId++;
+        Objects.Add(_currentId,direction);
     }
 }
 public class CharacterSpawnedEventArgs : EventArgs

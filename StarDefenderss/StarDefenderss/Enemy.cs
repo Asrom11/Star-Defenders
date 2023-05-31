@@ -6,21 +6,21 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace StarDefenderss;
 
-public class Enemy: Character, IObject
+public class Enemy: Character, IObject, IAttackable
 {
-    public override int HealthPoints { get; set; }
+    public override Direction Direction { get; set; }
     public override int Speed { get; set; }
+    public float AttackRange { get; }
     public override int Attack { get; set; }
     public override int Defense { get; set; }
     public override int DamageResistance { get; set; }
     public static Texture2D Texture2D { get; set; }
     public override int GuaranteedAttack { get; set; }
     public override int Currency { get; set; }
-    private int _tileSize;
+    private readonly int _tileSize;
     public float Scale { get; set; }
     public float Rotation { get; set; }
     public Color Color { get; set; }
-    public Direction dir { get; set; }
     public Vector2 Pos { get; set; }
     public bool IsSpawned { get; set; }
     private Vector2 _basePos;
@@ -29,7 +29,7 @@ public class Enemy: Character, IObject
     private List<Node> _path;
     public Enemy(int healthPoints, int attack, int defense, int speed, int damageResistance,
         Vector2 position, Node starPos, int guaranteedAttack, Node basePos, int tileSize, GameObjects enemyType):
-        base(healthPoints, attack, defense, speed, damageResistance, position, guaranteedAttack,enemyType, 0)
+        base(healthPoints, attack, defense, speed, damageResistance, position, guaranteedAttack,enemyType,  0, Color.Red)
     {
         _tileSize = tileSize;
         Pos = position;
@@ -37,13 +37,25 @@ public class Enemy: Character, IObject
         _path = PathFinding.AStar(starPos, basePos);
         _path.RemoveAt(0);
         Scale = 1f;
-
+        AttackRange = tileSize;
     }
+    public override void TakeDamage(int damage)
+    {
+    }
+
+    public Grid _grid { get; set; }
+
+    // todo character.BlocksPath т.к ограничение на блок
     public void Update(GameTime gameTime)
     {
-        if (_path is not { Count: > 0 }) return;
-        
-        
+        if (_path is not { Count: > 0 } ) return;
+        var nearbyObjects = _grid.GetNearbyObjects(Pos, AttackRange);
+        foreach (var obj in nearbyObjects)
+        {
+            obj.TakeDamage(Attack);
+            return;
+        }
+
         var nextNode = _path[0];
         var direction = new Vector2(nextNode.X - (Pos.X / _tileSize), nextNode.Y - (Pos.Y / _tileSize));
         direction.Normalize();
@@ -53,9 +65,5 @@ public class Enemy: Character, IObject
         {
             _path.RemoveAt(0);
         }
-    }
-    public override void TakeDamage(int damage)
-    {
-        
     }
 }

@@ -17,25 +17,19 @@ public class GameplayPresenter
 
         _gameplayView.CycleFinished += ViewModelUpdate;
         _gameplayModel.Updated += ModelViewUpdate;
-        _gameplayView.EnemyMoved += ViewModelMove;
         _gameplayModel.CurrencyChange += ModelViewUpdateCurrency;
         _gameplayView.CharacterSpawned += OnCharacterSpawned;
         _gameplayModel.Initialize();
     }
     private void ModelViewUpdate(object sender, GameplayEventArgs e)
     {
-        _gameplayView.LoadGameCycleParameters(e.Objects, e.EnemyObjects);
+        _gameplayView.LoadGameCycleParameters(e.Objects);
     }
 
-    private void ViewModelUpdate(object sender, EventArgs e)
+    private void ViewModelUpdate(object sender, CycleHasFinished e)
     {
-        _gameplayModel.Update();
+        _gameplayModel.Update(e.GameTime);
     }
-    private void ViewModelMove(object sender, EnemyMovedEventArgs e)
-    {
-        _gameplayModel.MoveEnemy(e.GameTime);
-    }
-
     private void ModelViewUpdateCurrency(object sender, CurrencyEventArgs e)
     {
         _gameplayView.LoadCurrencyValue(e.Currencys);

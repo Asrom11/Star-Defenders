@@ -4,16 +4,20 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace StarDefenderss;
 
-public abstract class Character
+public abstract class Character: IHasHealth
 {
     public GameObjects ImageId { get; set; }
     public int UnicId { get; set; }
+    public abstract Direction Direction { get; set; }
     public void Update(GameTime gameTime)
     {
     }
     public int Ditrection { get; set; }
     public Vector2 Pos{ get; set; }
-    public abstract int HealthPoints { get; set; }
+    public int CurrentHealth { get; set; }
+    public int MaxHealth { get; set; }
+    public Color _HealthColor { get; }
+    public Color Color { get; set; }
     public abstract int Speed { get; set; }
     public abstract int Attack { get; set; }
     public abstract int Defense { get; set; }
@@ -22,10 +26,12 @@ public abstract class Character
     public abstract int Currency { get; set; }
 
     public Character(int healthPoints, int attack, int defense, int speed,
-        int damageResistance, Vector2 position, int guaranteedAttack, GameObjects objectType, int curency)
+        int damageResistance, Vector2 position, int guaranteedAttack, GameObjects objectType, int curency, Color healthColor)
     {
+        _HealthColor = healthColor;
         Currency = curency;
-        HealthPoints = healthPoints;
+        MaxHealth = healthPoints;
+        CurrentHealth = healthPoints;
         Attack = attack;
         Defense = defense;
         DamageResistance = damageResistance;
@@ -37,7 +43,7 @@ public abstract class Character
     public virtual void TakeDamage(int damage)
     {
         var damageFromPlayer = (damage - DamageResistance);
-        HealthPoints -= damageFromPlayer >= 0 ? damageFromPlayer : GuaranteedAttack;
+        CurrentHealth -= damageFromPlayer >= 0 ? damageFromPlayer : GuaranteedAttack;
     }
 
     public virtual void AttackOperator()

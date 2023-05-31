@@ -10,7 +10,6 @@ namespace StarDefenderss;
 public class GameCycleView : Game, IGameplayView
 {
     private Dictionary<int, IObject> _objects = new();
-    private Dictionary<int, IObject> _enemyObjects = new();
     private Dictionary<GameObjects, Texture2D> _textures = new();
     private CharacterMenu characterMenu;
     private GraphicsDeviceManager _graphics;
@@ -20,8 +19,8 @@ public class GameCycleView : Game, IGameplayView
     private SpriteBatch _spriteBatch;
     private float elapsedTime;
     private SpriteFont font;
-    public event EventHandler CycleFinished;
-    public event EventHandler<EnemyMovedEventArgs> EnemyMoved;
+    private Texture2D _blankTexture;
+    public event EventHandler<CycleHasFinished> CycleFinished;
     public event EventHandler<CharacterSpawnedEventArgs> CharacterSpawned;
 
 
@@ -53,6 +52,8 @@ public class GameCycleView : Game, IGameplayView
         _textures.Add(GameObjects.Ditection, Content.Load<Texture2D>("Direction"));
         font = Content.Load<SpriteFont>("Font");
         
+        _blankTexture = new Texture2D(GraphicsDevice, 1, 1);
+        _blankTexture.SetData(new[] { Color.White });
         var operators = new List<IObject>();
         operators.Add(new Operator(100,10,1,1,1, new Vector2(0,0), 1,100, GameObjects.FirstOp));
         operators.Add(new TankOperator(100,10,1,1,1, new Vector2(0,0), 1, 100,GameObjects.TankOp));
@@ -75,36 +76,49 @@ public class GameCycleView : Game, IGameplayView
             var selectedCharacter = characterMenu.GetSelectedCharacter();
             CharacterSpawned?.Invoke(this, new CharacterSpawnedEventArgs { Position = mousePosition.ToVector2(), SpawnedCharacter = selectedCharacter });
         }
-        
-        
-        EnemyMoved.Invoke(this, new EnemyMovedEventArgs()
-        {
-            GameTime = gameTime,
-        });
-        CycleFinished(this, EventArgs.Empty);
+        CycleFinished(this,new CycleHasFinished(){GameTime = gameTime});
     }
 
     protected override void Draw(GameTime gameTime)
     {
         GraphicsDevice.Clear(Color.CornflowerBlue);
         _spriteBatch.Begin();
-        lock (_objects)
-            foreach (var o in _objects.Values)
+        foreach (var o in _objects.Values)
+        {
+            if (o is IHasHealth hasHealth)
             {
-                _spriteBatch.Draw(_textures[o.ImageId], o.Pos, null, o.Color, o.Rotation, Vector2.Zero, o.Scale,
-                    SpriteEffects.None, 0f);
+                var position =o.Pos;
+                var currentHealth = hasHealth.CurrentHealth;
+                var maxHealth = hasHealth.MaxHealth;
+                DrawHealthBar(_spriteBatch, position, currentHealth, maxHealth, hasHealth._HealthColor, o is Enemy);
             }
+            _spriteBatch.Draw(_textures[o.ImageId], o.Pos, null, o.Color, o.Rotation, Vector2.Zero, o.Scale,
+                SpriteEffects.None, 0f);
+        }
         characterMenu.Draw(_spriteBatch, GraphicsDevice.Viewport.Height);
         _spriteBatch.DrawString(font, $"Currency: {currency}",
             new Vector2(GraphicsDevice.Viewport.Width - 150, GraphicsDevice.Viewport.Height - 30), Color.White);
         _spriteBatch.End();
         base.Draw(gameTime);
     }
+    public void DrawHealthBar(SpriteBatch spriteBatch, Vector2 position, int currentHealth, int maxHealth, Color color,bool isEnemy)
+    {
+        var width = 50;
+        var height = 5;
+        var border = 2;
+        var yOffset = isEnemy ? 64 : 50;
 
-    public void LoadGameCycleParameters(Dictionary<int, IObject> Objects, Dictionary<int, IObject> EnemObjects)
+        float healthPercentage = (float)currentHealth / maxHealth;
+        var healthBarWidth = (int)(width * healthPercentage);
+
+        spriteBatch.Draw(_blankTexture, new Rectangle((int)position.X - border, (int)position.Y - border + yOffset, width + border * 2, height + border * 2), Color.Black);
+        spriteBatch.Draw(_blankTexture, new Rectangle((int)position.X, (int)position.Y + yOffset, healthBarWidth, height), color);
+    }
+
+
+    public void LoadGameCycleParameters(Dictionary<int, IObject> Objects)
     {
         _objects = Objects;
-        _enemyObjects = EnemObjects;
     }
 
 
