@@ -19,8 +19,10 @@ public class GameCycleView : Game, IGameplayView
     private SpriteBatch _spriteBatch;
     private float elapsedTime;
     private SpriteFont font;
+    private HashSet<GameObjects> spawnedCharacters;
     private Texture2D _blankTexture;
     public event EventHandler<CycleHasFinished> CycleFinished;
+    public event EventHandler<ActivateUltimate> ActivateUltimate;
     public event EventHandler<CharacterSpawnedEventArgs> CharacterSpawned;
 
 
@@ -44,7 +46,7 @@ public class GameCycleView : Game, IGameplayView
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
         _textures.Add(GameObjects.Base, Content.Load<Texture2D>("square"));
-        _textures.Add(GameObjects.Enemy, Content.Load<Texture2D>("tempEnemy"));
+        _textures.Add(GameObjects.Enemy, Content.Load<Texture2D>("easyEnemy"));
         _textures.Add(GameObjects.Wall, Content.Load<Texture2D>("Grass"));
         _textures.Add(GameObjects.Path, Content.Load<Texture2D>("Path"));
         _textures.Add(GameObjects.FirstOp,Content.Load<Texture2D>("firstOper"));
@@ -54,10 +56,10 @@ public class GameCycleView : Game, IGameplayView
         
         _blankTexture = new Texture2D(GraphicsDevice, 1, 1);
         _blankTexture.SetData(new[] { Color.White });
-        var operators = new List<IObject>();
-        operators.Add(new Operator(100,10,1,1,1, new Vector2(0,0), 1,100, GameObjects.FirstOp));
-        operators.Add(new TankOperator(100,10,1,1,1, new Vector2(0,0), 1, 100,GameObjects.TankOp));
-        characterMenu = new CharacterMenu(operators,_textures);
+        var operators = new List<GameObjects>();
+        operators.Add(GameObjects.FirstOp);
+        operators.Add(GameObjects.TankOp);
+        characterMenu = new CharacterMenu(operators,_textures,spawnedCharacters);
     }
 
     protected override void Update(GameTime gameTime)
@@ -69,16 +71,11 @@ public class GameCycleView : Game, IGameplayView
         base.Update(gameTime);
         InputManager.Update();
         characterMenu.Update();
-
-        if (InputManager.IsMouseLeftButtonPressed() && characterMenu.IsCharacterSelected()) 
-        {
-            var mousePosition = InputManager.GetMousePosition();
-            var selectedCharacter = characterMenu.GetSelectedCharacter();
-            CharacterSpawned?.Invoke(this, new CharacterSpawnedEventArgs { Position = mousePosition.ToVector2(), SpawnedCharacter = selectedCharacter });
-        }
+        SpawnCharacter();
+        CheckUltimate();
         CycleFinished(this,new CycleHasFinished(){GameTime = gameTime});
     }
-
+    
     protected override void Draw(GameTime gameTime)
     {
         GraphicsDevice.Clear(Color.CornflowerBlue);
@@ -90,7 +87,7 @@ public class GameCycleView : Game, IGameplayView
                 var position =o.Pos;
                 var currentHealth = hasHealth.CurrentHealth;
                 var maxHealth = hasHealth.MaxHealth;
-                DrawHealthBar(_spriteBatch, position, currentHealth, maxHealth, hasHealth._HealthColor, o is Enemy);
+                DrawHealthBar(_spriteBatch, position, currentHealth, maxHealth, hasHealth._HealthColor);
             }
             _spriteBatch.Draw(_textures[o.ImageId], o.Pos, null, o.Color, o.Rotation, Vector2.Zero, o.Scale,
                 SpriteEffects.None, 0f);
@@ -101,12 +98,28 @@ public class GameCycleView : Game, IGameplayView
         _spriteBatch.End();
         base.Draw(gameTime);
     }
-    public void DrawHealthBar(SpriteBatch spriteBatch, Vector2 position, int currentHealth, int maxHealth, Color color,bool isEnemy)
+
+    private void CheckUltimate()
+    {
+        if (InputManager.IsMouseRightButtonPressed())
+        {
+            ActivateUltimate?.Invoke(this, new ActivateUltimate { Position = InputManager.GetMousePosition()});
+        }
+    }
+
+    private void SpawnCharacter()
+    {
+        if (!InputManager.IsMouseLeftButtonPressed() || !characterMenu.IsCharacterSelected()) return;
+        var mousePosition = InputManager.GetMousePosition();
+        var selectedCharacter = characterMenu.GetSelectedCharacter();
+        CharacterSpawned?.Invoke(this, new CharacterSpawnedEventArgs { Position = mousePosition.ToVector2(), SpawnedCharacter = selectedCharacter });
+    }
+    private void DrawHealthBar(SpriteBatch spriteBatch, Vector2 position, int currentHealth, int maxHealth, Color color)
     {
         var width = 50;
         var height = 5;
         var border = 2;
-        var yOffset = isEnemy ? 64 : 50;
+        var yOffset = 64;
 
         float healthPercentage = (float)currentHealth / maxHealth;
         var healthBarWidth = (int)(width * healthPercentage);

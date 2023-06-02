@@ -9,6 +9,7 @@ public interface IGameplayView
 {
     event EventHandler<CycleHasFinished> CycleFinished;
     event EventHandler<CharacterSpawnedEventArgs> CharacterSpawned;
+     event EventHandler<ActivateUltimate> ActivateUltimate;
 
     void LoadGameCycleParameters(Dictionary<int, IObject> Objects);
 
@@ -21,3 +22,7 @@ public class CycleHasFinished :EventArgs
     public GameTime GameTime { get; set; } 
 }
 
+public class ActivateUltimate : EventArgs
+{
+    public Point Position;
+}

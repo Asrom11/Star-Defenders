@@ -13,8 +13,12 @@ public interface IGameplayModel
     void Initialize();   
     void Update(GameTime gameTime);
 
-    void MoveEnemy(GameTime gameTime);
-    void SpawnCharacter(Vector2 position, IObject character);
+    private void MoveEnemy(GameTime gameTime)
+    {
+    }
+
+    void SpawnCharacter(Vector2 position, GameObjects character);
+    void TryActivateUltimate(Point pointClick);
 
 }
 

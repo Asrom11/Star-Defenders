@@ -19,6 +19,7 @@ public class GameplayPresenter
         _gameplayModel.Updated += ModelViewUpdate;
         _gameplayModel.CurrencyChange += ModelViewUpdateCurrency;
         _gameplayView.CharacterSpawned += OnCharacterSpawned;
+        _gameplayView.ActivateUltimate += OnUltimateUsed;
         _gameplayModel.Initialize();
     }
     private void ModelViewUpdate(object sender, GameplayEventArgs e)
@@ -37,6 +38,11 @@ public class GameplayPresenter
     private void OnCharacterSpawned(object sender, CharacterSpawnedEventArgs e)
     {
         _gameplayModel.SpawnCharacter(e.Position,e.SpawnedCharacter);
+    }
+
+    private void OnUltimateUsed(object sender, ActivateUltimate e)
+    {
+        _gameplayModel.TryActivateUltimate(e.Position);
     }
     public void LaunchGame()
     {

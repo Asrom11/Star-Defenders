@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using StarDefenders;
 
@@ -6,7 +7,6 @@ namespace StarDefenderss;
 public static class MapGenerator
 {
     public const int TileSize = 40;
-
     public static IObject GenerateObject (
         char sign, int xTile, int yTile, ref Vector2 EnemyPos, ref Vector2 BasePos)
     {

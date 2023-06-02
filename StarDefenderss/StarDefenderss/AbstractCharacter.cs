@@ -8,11 +8,6 @@ public abstract class Character: IHasHealth
 {
     public GameObjects ImageId { get; set; }
     public int UnicId { get; set; }
-    public abstract Direction Direction { get; set; }
-    public void Update(GameTime gameTime)
-    {
-    }
-    public int Ditrection { get; set; }
     public Vector2 Pos{ get; set; }
     public int CurrentHealth { get; set; }
     public int MaxHealth { get; set; }
@@ -25,6 +20,8 @@ public abstract class Character: IHasHealth
     public abstract  int GuaranteedAttack{ get; set; }
     public abstract int Currency { get; set; }
 
+    public abstract bool IsSpawned { get; set; }
+
     public Character(int healthPoints, int attack, int defense, int speed,
         int damageResistance, Vector2 position, int guaranteedAttack, GameObjects objectType, int curency, Color healthColor)
     {
@@ -35,19 +32,13 @@ public abstract class Character: IHasHealth
         Attack = attack;
         Defense = defense;
         DamageResistance = damageResistance;
-        Pos = position;
         Speed = speed;
         GuaranteedAttack = guaranteedAttack;
         ImageId = objectType;
     }
     public virtual void TakeDamage(int damage)
     {
-        var damageFromPlayer = (damage - DamageResistance);
+        var damageFromPlayer = (damage * DamageResistance);
         CurrentHealth -= damageFromPlayer >= 0 ? damageFromPlayer : GuaranteedAttack;
     }
-
-    public virtual void AttackOperator()
-    {
-    }
-    
 }

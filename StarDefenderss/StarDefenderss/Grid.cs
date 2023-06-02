@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 
 namespace StarDefenderss;
@@ -11,18 +12,18 @@ public class Grid
     public Grid(int cellSize)
     {
         this.cellSize = cellSize;
-        this.cells = new Dictionary<Point, List<IAttackable>>();
+        cells = new Dictionary<Point, List<IAttackable>>();
     }
 
     public void Clear()
     {
-        this.cells.Clear();
+        cells.Clear();
     }
 
     public void Add(IAttackable obj)
     {
         var cell = GetCell(obj.Pos);
-        if (!this.cells.TryGetValue(cell, out var objects))
+        if (!cells.TryGetValue(cell, out var objects))
         {
             objects = new List<IAttackable>();
             this.cells.Add(cell, objects);
@@ -39,7 +40,7 @@ public class Grid
         {
             for (var y = minCell.Y; y <= maxCell.Y; y++)
             {
-                if (this.cells.TryGetValue(new Point(x, y), out var objects))
+                if (cells.TryGetValue(new Point(x, y), out var objects))
                 {
                     foreach (var obj in objects)
                     {
@@ -52,10 +53,18 @@ public class Grid
             }
         }
     }
-
+    public void Remove(IAttackable obj)
+    {
+        var cell = GetCell(obj.Pos);
+        
+        if (cells.TryGetValue(cell, out var objects))
+        {
+            objects.Remove(obj);
+        }
+    }
     private Point GetCell(Vector2 position)
     {
-        return new Point((int)(position.X / this.cellSize), (int)(position.Y / this.cellSize));
+        return new Point((int)(position.X / cellSize), (int)(position.Y / cellSize));
     }
 }
 public interface IAttackable

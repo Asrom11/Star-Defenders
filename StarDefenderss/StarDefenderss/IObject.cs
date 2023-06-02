@@ -15,6 +15,4 @@ public interface IObject
     float Rotation { get; set; }
     Color Color { get; set;}
     Vector2 Pos { get; set; }
-    bool IsSpawned { get; set; }
-    void Update(GameTime gameTime);
 }

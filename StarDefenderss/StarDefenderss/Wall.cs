@@ -17,8 +17,6 @@ public class Wall: IObject
         set{}
     }
 
-    public Direction dir { get; set; }
-
     public Wall()
     {
         Scale = 1f;
@@ -29,4 +27,6 @@ public class Wall: IObject
     public void Update(GameTime gameTime)
     {
     }
+
+    public Grid _grid { get; set; }
 }

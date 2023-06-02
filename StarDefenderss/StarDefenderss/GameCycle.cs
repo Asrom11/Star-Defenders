@@ -1,15 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Timers;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using StarDefenders;
 
 namespace StarDefenderss;
 
@@ -19,61 +11,47 @@ public class GameCycle: IGameplayModel
     public int Currency { get; set; }
     public event EventHandler<CharacterSpawnedEventArgs> CharacterSelected;
     public Dictionary<int, IObject> Objects { get; set; }
-    public Dictionary<int, IObject> Enemys { get; set; }
-    private Grid _grid;
+    
+    private Grid _gridWithOperators;
+    private Grid _gridWithEnemys;
+
+    private HashSet<Point> _wallCoordinats = new ();
     public event EventHandler<GameplayEventArgs> Updated;
     public event EventHandler<CurrencyEventArgs> CurrencyChange;
-    
+    private Dictionary<GameObjects, IOperator> _operators;
+    private Dictionary<GameObjects, Enemy> _enemies;
+    private HashSet<IOperator> spawnedOperators = new ();
+    private HashSet<Enemy> spawnedEnemys = new ();
+    private HashSet<Vector2> operatorPos = new();
+
     private Timer _spawnTimer;
     private Timer _currencyTimer;
     private int _currentId = 1;
     private Vector2 BasePos;
     private Vector2 EnemyPos;
     private Node[,] _nodes;
-
+    
     private const float spawnInterval = 1000;
     private const float currencyInterval = 100;
     private const int valuetAdd = 5;
     private  int width;
     private  int height;
     private GameObjects selectedDirection = 0;
-
-    private Dictionary<Keys, GameObjects> _keyDirectionMap = new()
-    {
-        { Keys.Up, GameObjects.Up },
-        { Keys.Down, GameObjects.Down },
-        { Keys.Left, GameObjects.Left },
-        { Keys.Right, GameObjects.Right }
-    };
-
-    private Dictionary<GameObjects, float> _directionRotationMap = new()
-    {
-        { GameObjects.Up, 0 },
-        { GameObjects.Down, MathHelper.Pi },
-        { GameObjects.Left, -MathHelper.PiOver2 },
-        { GameObjects.Right, MathHelper.PiOver2 }
-    };
-    private Dictionary<GameObjects, Vector2> _directionOffsetMap = new()
-    {
-        { GameObjects.Up, new Vector2(0, -TileSize) },
-        { GameObjects.Down, new Vector2(0, TileSize) },
-        { GameObjects.Left, new Vector2(-TileSize, 0) },
-        { GameObjects.Right, new Vector2(TileSize, 0) }
-    };
-    
-    
-    
     public void Initialize()
     {
         var textMap = MapLoader.Load(LevelName.LevelFirst);
         var lines = textMap.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
         Objects = new Dictionary<int, IObject>();
-        Enemys = new Dictionary<int, IObject>();
         width = lines[0].Length;
         height = lines.Length;
         InitializeMap(lines);
         InitializeGraph(lines);
-        _grid = new Grid(TileSize);
+        _operators = new Dictionary<GameObjects, IOperator>();
+        _operators.Add(GameObjects.FirstOp, new Operator(100,10,1,1,1, new Vector2(0,0), 1,100, GameObjects.FirstOp));
+        _operators.Add(GameObjects.TankOp, new TankOperator(100,10,1,1,1, new Vector2(0,0), 1, 100,GameObjects.TankOp));
+        
+        _gridWithOperators = new Grid(TileSize);
+        _gridWithEnemys = new Grid(TileSize);
         _currencyTimer = new Timer(currencyInterval);
         _spawnTimer = new Timer(currencyInterval);
         _currencyTimer.Elapsed += AddCurrency;
@@ -91,6 +69,7 @@ public class GameCycle: IGameplayModel
         {
             var generatedObject = MapGenerator.GenerateObject(
                 lines[x][y], x, y, ref EnemyPos, ref BasePos);
+            if (lines[x][y] == 'W') _wallCoordinats.Add(new Point(x, y));
             Objects.Add(_currentId, generatedObject);
             _currentId++;
         }
@@ -119,56 +98,80 @@ public class GameCycle: IGameplayModel
             {
                 // захардкожено, но потом будет исправлено ;)
                 var node = _nodes[x, y];
-                if (x > 0) node.Neighbors.Add(_nodes[x - 1, y]);
-                if (x < width - 1) node.Neighbors.Add(_nodes[x + 1, y]);
-                if (y > 0) node.Neighbors.Add(_nodes[x, y - 1]);
-                if (y < height - 1) node.Neighbors.Add(_nodes[x, y + 1]);
+                if (x > 0 && !_wallCoordinats.Contains(new Point(x,y))) node.Neighbors.Add(_nodes[x - 1, y]);
+                if (x < width - 1 && !_wallCoordinats.Contains(new Point(x,y))) node.Neighbors.Add(_nodes[x + 1, y]);
+                if (y > 0 && !_wallCoordinats.Contains(new Point(x,y))) node.Neighbors.Add(_nodes[x, y - 1]);
+                if (y < height - 1 && !_wallCoordinats.Contains(new Point(x,y))) node.Neighbors.Add(_nodes[x, y + 1]);
             }
         }
     }
     public void Update(GameTime gameTime)
     {
+        _gridWithEnemys.Clear();
         MoveEnemy(gameTime);
+        UpdatePlayer(gameTime);
         Updated.Invoke(this, new GameplayEventArgs { Objects = this.Objects});
     }
-
-    public void MoveEnemy(GameTime gameTime)
+    
+    private void MoveEnemy(GameTime gameTime)
     {
-        foreach (var enemy in Enemys.Values)
+        foreach (var obj in spawnedEnemys)
         {
-            enemy.Update(gameTime);
+            obj.Update(gameTime);
+            _gridWithEnemys.Add(obj);
         }
     }
-    
+
+    //Todo добавить в интерфейс
+    private void UpdatePlayer(GameTime gameTime)
+    {
+        foreach (var obj in spawnedOperators)
+        {
+            obj.Update(gameTime);
+        }
+    }
+
+    public void TryActivateUltimate(Point pointClick)
+    {
+        var currentPoit = pointClick.ToVector2();
+        var near = _gridWithOperators.GetNearbyObjects(currentPoit,30);
+        foreach (var operators in near)
+        {
+            if (operators is not IOperator playerOperator) continue;
+            playerOperator.ActivUltimate();
+            return;
+
+        }
+    }
     private void SpawnEnemy (object sender, ElapsedEventArgs e)
     {
         var nodeEnemy = _nodes[(int)(EnemyPos.X / TileSize), (int)(EnemyPos.Y / TileSize)];
         var nodeBase = _nodes[(int)BasePos.X / TileSize, (int)BasePos.Y / TileSize];
         var enemy = new Enemy(100, 1, 2, 4, 0, EnemyPos, nodeEnemy, 3, nodeBase, TileSize, GameObjects.Enemy);
         _currentId++;
-        enemy._grid = _grid;
-        Enemys.Add (_currentId,enemy);
+        enemy._grid = _gridWithOperators;
+        spawnedEnemys.Add(enemy);
+        _gridWithEnemys.Add(enemy);
         Objects.Add(_currentId,enemy);
     }
-    //todo Исправить, чтобы не предевали Iobject, а лишь ID и позицию,  чтобы каст убрать.
-    public void SpawnCharacter(Vector2 position, IObject charactere)
+    
+    public void SpawnCharacter(Vector2 position, GameObjects charactere)
     {
-        if (!IsMousePositionOnTileMap(position) || Currency < charactere.Currency || charactere.IsSpawned) return;
+        var getCharacterToSpawn = _operators[charactere];
+        if (!IsMousePositionOnTileMap(position) || Currency < getCharacterToSpawn.Currency || getCharacterToSpawn.IsSpawned) return;
         
-        Currency -= charactere.Currency;
+        Currency -= getCharacterToSpawn.Currency;
+        operatorPos.Add(position);
         position.X = (int) position.X / TileSize;
         position.Y = (int) position.Y / TileSize;
         _currentId++; 
-        charactere.Pos = position * TileSize;
-        var dir = new Direction { ImageId = GameObjects.Ditection, Pos = charactere.Pos };
-        HandleDirectionSelection(dir);
-        charactere.IsSpawned = true;
-        Objects.Add(_currentId,charactere);
-        if (charactere is IAttackable attackableCharacter)
-        {
-            attackableCharacter._grid = _grid;
-            _grid.Add(attackableCharacter);
-        }
+        getCharacterToSpawn.Pos = position * TileSize;
+        getCharacterToSpawn.IsSpawned = true;
+        Objects.Add(_currentId, (IObject)getCharacterToSpawn);
+        spawnedOperators.Add(getCharacterToSpawn);
+        getCharacterToSpawn._grid = _gridWithEnemys;
+        if (getCharacterToSpawn is not IAttackable attackableCharacter) return;
+        _gridWithOperators.Add(attackableCharacter);
     }
     private bool IsMousePositionOnTileMap(Vector2 mousePosition)
     {
@@ -182,52 +185,9 @@ public class GameCycle: IGameplayModel
         return mousePosition.X >= tileMapX && mousePosition.X  < tileMapX + tileMapWidth  &&
                mousePosition.Y >= tileMapY && mousePosition.Y < tileMapY + tileMapHeight ;
     }
-    private async Task HandleDirectionSelection (Direction direction)
-    {
-        selectedDirection = 0;
-        while (selectedDirection == 0)
-        {
-            foreach (var kvp in _keyDirectionMap)
-            {
-                if (!InputManager.IsKeyPressed(kvp.Key)) continue;
-                
-                selectedDirection = kvp.Value;
-                break;
-            }
-            await Task.Delay(1);
-        }
-        
-        direction.Rotation = _directionRotationMap[selectedDirection];
-        direction.Pos += _directionOffsetMap[selectedDirection];
-        _currentId++;
-        Objects.Add(_currentId,direction);
-    }
 }
 public class CharacterSpawnedEventArgs : EventArgs
 {
-    public IObject SpawnedCharacter { get; set; }
+    public GameObjects SpawnedCharacter { get; set; }
     public Vector2 Position { get; set; }
-}
-
-public class Direction: IObject
-{
-    public GameObjects ImageId { get; set; }
-    public int Currency { get; set; }
-    public int UnicId { get; set; }
-    public float Scale { get; set; }
-    public float Rotation { get; set; }
-    public Color Color { get; set; }
-    public Direction dir { get; set; }
-    public Vector2 Pos { get; set; }
-    public bool IsSpawned { get; set; }
-
-    public void Update(GameTime gameTime)
-    {
-    }
-
-    public Direction()
-    {
-        Color = Color.White;
-        Scale = 0.5f;
-    }
 }

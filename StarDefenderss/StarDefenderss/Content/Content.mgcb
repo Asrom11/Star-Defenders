@@ -25,6 +25,18 @@
 /processorParam:TextureFormat=Color
 /build:Direction.png
 
+#begin easyEnemy.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:easyEnemy.png
+
 #begin firstOper.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -91,16 +103,4 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:tankOper.png
-
-#begin tempEnemy.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:tempEnemy.png
 

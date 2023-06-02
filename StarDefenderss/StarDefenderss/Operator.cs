@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace StarDefenderss;
 
-public class Operator: Character, IObject, IAttackable
+public class Operator: Character, IObject, IAttackable, IOperator
 {
     public override int Speed { get; set; }
     public float AttackRange { get; }
@@ -17,8 +17,8 @@ public class Operator: Character, IObject, IAttackable
     public float Rotation { get; set; }
     public Color Color { get; set; }
     public Vector2 Pos{ get; set; }
-    public bool IsSpawned { get; set; }
-    public override Direction Direction { get; set; }
+    public override bool IsSpawned { get; set; }
+    public Grid _grid { get; set; }
 
     public Operator(int healthPoints, int attack, int defense, int speed, int damageResistance,
         Vector2 position, int guaranteedAttack, int currency, GameObjects operType) : base(healthPoints, attack, defense, speed, damageResistance,
@@ -26,14 +26,28 @@ public class Operator: Character, IObject, IAttackable
     {
         Color = Color.White;
         Scale = 1f;
+        MaxHealth = 100;
+        CurrentHealth = 100;
+        AttackRange = 1;
+        Attack = 100;
     }
     public override void TakeDamage(int damage)
     {
+        var damageFromPlayer = damage;
+        CurrentHealth -= damageFromPlayer >= 0 ? damageFromPlayer : GuaranteedAttack;
     }
-
-    public Grid _grid { get; set; }
-
+    
     public void Update(GameTime gameTime)
     {
+        var nearbyObjects = _grid.GetNearbyObjects(Pos, 80);
+        foreach (var obj in nearbyObjects)
+        {
+            obj.TakeDamage(Attack);
+        }
+    }
+
+    public void ActivUltimate()
+    {
+        CurrentHealth = 0;
     }
 }

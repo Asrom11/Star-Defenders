@@ -9,15 +9,17 @@ namespace StarDefenderss;
 
 public class CharacterMenu
 {
-    private List<IObject> character = new ();
+    private List<GameObjects> character = new ();
     private Dictionary<GameObjects, Texture2D> _textures = new();
     private int selectedCharacterIndex;
+    private HashSet<GameObjects> _spawnedCharacters;
     public event EventHandler<CharacterSpawnedEventArgs> CharacterSelected;
     private const int characterSize = 50;
     private int yPos;
     
-    public CharacterMenu(List<IObject> characters,Dictionary<GameObjects, Texture2D> textures )
+    public CharacterMenu(List<GameObjects> characters,Dictionary<GameObjects, Texture2D> textures, HashSet<GameObjects> spawnedCharactets)
     {
+        _spawnedCharacters = new HashSet<GameObjects>();
         _textures = textures;
         character = characters;
         selectedCharacterIndex = -1;
@@ -31,13 +33,13 @@ public class CharacterMenu
         for (var i = 0; i < character.Count; i++)
         {
             var color = Color.White;
-            if (character[i].IsSpawned)
+            if (_spawnedCharacters.Contains(character[i]))
                 color = Color.Red;
             else if (i == selectedCharacterIndex)
             {
                 color = Color.Gray;
             }
-            spriteBatch.Draw(_textures[character[i].ImageId], new Rectangle(x, y, characterSize, characterSize), color);
+            spriteBatch.Draw(_textures[character[i]], new Rectangle(x, y, characterSize, characterSize), color);
             x += characterSize;
         }
     }
@@ -59,11 +61,11 @@ public class CharacterMenu
                mousePosition.Y < yPos - characterSize || mousePosition.Y >= yPos;
     }
 
-    public IObject GetSelectedCharacter()
+    public GameObjects GetSelectedCharacter()
     {
         return character[selectedCharacterIndex];
     }
-
+    
     public bool IsCharacterSelected()
     {
         return selectedCharacterIndex >= 0 && selectedCharacterIndex < character.Count;

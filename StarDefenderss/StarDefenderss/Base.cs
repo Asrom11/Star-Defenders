@@ -14,7 +14,6 @@ public class Base: IObject
     public float Scale { get; set; }
     public float Rotation { get; set; }
     public Color Color { get; set; }
-    public Direction dir { get; set; }
     public Vector2 Pos { get; set; }
     public bool IsSpawned { get; set; }
     public Texture2D Texture { get; set; }
@@ -31,4 +30,6 @@ public class Base: IObject
     public void Update(GameTime gameTime)
     {
     }
+
+    public Grid _grid { get; set; }
 }

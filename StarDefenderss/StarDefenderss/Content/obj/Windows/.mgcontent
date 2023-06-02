@@ -4,9 +4,21 @@
   <Platform>Windows</Platform>
   <Config />
   <SourceFiles>
-    <File>C:/Users/Admin/RiderProjects/StarDefenderss/StarDefenderss/Content/square.png</File>
+    <File>C:/Users/Admin/RiderProjects/Star-Defenders/StarDefenderss/StarDefenderss/Content/Direction.png</File>
+    <File>C:/Users/Admin/RiderProjects/Star-Defenders/StarDefenderss/StarDefenderss/Content/firstOper.png</File>
+    <File>C:/Users/Admin/RiderProjects/Star-Defenders/StarDefenderss/StarDefenderss/Content/font.spritefont</File>
+    <File>C:/Users/Admin/RiderProjects/Star-Defenders/StarDefenderss/StarDefenderss/Content/Grass.png</File>
+    <File>C:/Users/Admin/RiderProjects/Star-Defenders/StarDefenderss/StarDefenderss/Content/Path.png</File>
+    <File>C:/Users/Admin/RiderProjects/Star-Defenders/StarDefenderss/StarDefenderss/Content/square.png</File>
+    <File>C:/Users/Admin/RiderProjects/Star-Defenders/StarDefenderss/StarDefenderss/Content/tankOper.png</File>
   </SourceFiles>
   <DestFiles>
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
     <File xsi:nil="true" />
   </DestFiles>
 </SourceFileCollection>
