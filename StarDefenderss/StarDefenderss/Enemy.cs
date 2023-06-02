@@ -6,11 +6,13 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace StarDefenderss;
 
-public class Enemy: Character, IObject, IAttackable
+public class Enemy: Character, IObject, IAttackable,IEnemy
 {
     public override int Speed { get; set; }
+    public int BlockCount { get; set; }
+    public int CurrentBlock { get; set; }
     public float AttackRange { get; }
-    public override int Attack { get; set; }
+    public sealed override int Attack { get; set; }
     public override int Defense { get; set; }
     public override int DamageResistance { get; set; }
     public static Texture2D Texture2D { get; set; }
@@ -28,17 +30,18 @@ public class Enemy: Character, IObject, IAttackable
     private Node _endNode;
     private List<Node> _path;
     public Enemy(int healthPoints, int attack, int defense, int speed, int damageResistance,
-        Vector2 position, Node starPos, int guaranteedAttack, Node basePos, int tileSize, GameObjects enemyType):
+        Vector2 position, Node startNode, Node endNode, int guaranteedAttack, int tileSize, GameObjects enemyType, Grid grid):
         base(healthPoints, attack, defense, speed, damageResistance, position, guaranteedAttack,enemyType,  0, Color.Red)
     {
         _tileSize = tileSize;
         Pos = position;
         Color = Color.White;
-        _path = PathFinding.AStar(starPos, basePos);
+        _path = PathFinding.AStar(startNode,endNode);
         _path.RemoveAt(0);
         Scale = 1f;
         AttackRange = tileSize;
         Attack = 100;
+        _grid = grid;
     }
     public override void TakeDamage(int damage)
     {
@@ -60,15 +63,18 @@ public class Enemy: Character, IObject, IAttackable
         var nearbyObjects = _grid.GetNearbyObjects(attackPosition, _tileSize/2);
         
         foreach (var obj in nearbyObjects)
-        {
-            obj.TakeDamage(Attack);
+        {   
+            if (obj.CurrentBlock >= obj.BlockCount)
+                continue;
+            obj.CurrentBlock++;
+            obj.TakeDamage(0);
             return;
         }
         
         Pos += direction * (float)gameTime.ElapsedGameTime.TotalSeconds * Speed * 10;
         if (Vector2.Distance(Pos/ _tileSize, new Vector2(nextNode.X, nextNode.Y)) < 0.1f)
         {
-            _path.RemoveAt(0);
+            _path.Remove(nextNode);
         }
     }
 }

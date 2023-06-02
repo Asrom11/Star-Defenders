@@ -28,15 +28,15 @@ public static class PathFinding
                 if (closedNodes .Contains(neighbor))
                     continue;
 
-                var tentativeGScore = currentNode.MovementCost + Distance(currentNode, neighbor);
+                var pathCost = currentNode.MovementCost + Distance(currentNode, neighbor);
 
                 if (!openNodes .Contains(neighbor))
                     openNodes .Add(neighbor);
-                else if (tentativeGScore >= neighbor.MovementCost)
+                else if (pathCost >= neighbor.MovementCost)
                     continue;
 
                 neighbor.PreviousNode = currentNode;
-                neighbor.MovementCost = tentativeGScore;
+                neighbor.MovementCost = pathCost;
                 neighbor.TotalCost = neighbor.MovementCost + Heuristic(neighbor, endNode);
             }
         }

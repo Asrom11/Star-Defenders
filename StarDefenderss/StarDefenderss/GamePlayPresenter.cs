@@ -17,23 +17,24 @@ public class GameplayPresenter
 
         _gameplayView.CycleFinished += ViewModelUpdate;
         _gameplayModel.Updated += ModelViewUpdate;
-        _gameplayModel.CurrencyChange += ModelViewUpdateCurrency;
         _gameplayView.CharacterSpawned += OnCharacterSpawned;
         _gameplayView.ActivateUltimate += OnUltimateUsed;
+        _gameplayModel.GameStatus += OnGameStatus;
         _gameplayModel.Initialize();
+    }
+
+    private void OnGameStatus(object sender, GamePlayStatus e)
+    {
+        _gameplayView.SetGameStatus(e.GameIsWin);
     }
     private void ModelViewUpdate(object sender, GameplayEventArgs e)
     {
-        _gameplayView.LoadGameCycleParameters(e.Objects);
+        _gameplayView.LoadGameCycleParameters(e.Objects,e.Currencys,e.PlayerLives);
     }
 
     private void ViewModelUpdate(object sender, CycleHasFinished e)
     {
         _gameplayModel.Update(e.GameTime);
-    }
-    private void ModelViewUpdateCurrency(object sender, CurrencyEventArgs e)
-    {
-        _gameplayView.LoadCurrencyValue(e.Currencys);
     }
     private void OnCharacterSpawned(object sender, CharacterSpawnedEventArgs e)
     {

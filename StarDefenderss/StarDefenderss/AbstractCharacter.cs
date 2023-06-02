@@ -4,13 +4,16 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace StarDefenderss;
 
-public abstract class Character: IHasHealth
+public abstract class Character: IHasBar
 {
     public GameObjects ImageId { get; set; }
     public int UnicId { get; set; }
-    public Vector2 Pos{ get; set; }
+    
+    public Vector2 Position { get; set; }
     public int CurrentHealth { get; set; }
     public int MaxHealth { get; set; }
+    public int CurrentMana { get; set; }
+    public int MaxMana { get; set; }
     public Color _HealthColor { get; }
     public Color Color { get; set; }
     public abstract int Speed { get; set; }

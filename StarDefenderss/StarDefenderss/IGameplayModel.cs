@@ -7,8 +7,10 @@ namespace StarDefenderss;
 public interface IGameplayModel
 {
     event EventHandler<GameplayEventArgs> Updated;
-    event EventHandler<CurrencyEventArgs> CurrencyChange;
-    public int Currency { get; set; }
+    event EventHandler<GamePlayStatus> GameStatus;
+    int Currency { get;  }
+
+    int PlayerLives { get;  }
     public Dictionary<int, IObject> Objects { get; set; }
     void Initialize();   
     void Update(GameTime gameTime);
@@ -26,9 +28,11 @@ public interface IGameplayModel
 public class GameplayEventArgs : EventArgs
 {
     public Dictionary<int, IObject> Objects { get; set; }
+    public int Currencys { get; set; }
+    public int PlayerLives { get; set; }
 }
 
-public class CurrencyEventArgs : EventArgs
+public class GamePlayStatus : EventArgs
 {
-    public int Currencys { get; set; }
+    public bool GameIsWin { get; set; }
 }

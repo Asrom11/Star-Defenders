@@ -34,7 +34,7 @@ public class Grid
 
     public IEnumerable<IAttackable> GetNearbyObjects(Vector2 position, float range)
     {
-        var minCell = GetCell(new Vector2(position.X - range, position.Y - range));
+        var minCell = GetCell(new Vector2(position.X  - range, position.Y - range));
         var maxCell = GetCell(new Vector2(position.X + range, position.Y + range));
         for (var x = minCell.X; x <= maxCell.X; x++)
         {
@@ -66,10 +66,16 @@ public class Grid
     {
         return new Point((int)(position.X / cellSize), (int)(position.Y / cellSize));
     }
+    public bool IsEmpty()
+    {
+        return cells.Count == 0;
+    }
+
 }
-public interface IAttackable
+public interface IAttackable:  IObject
 {
-    public Vector2 Pos{ get; set; }
+    int BlockCount { get; set; }
+    int CurrentBlock { get; set; }
     float AttackRange { get; }
     int Attack { get; }
     void TakeDamage(int damage);

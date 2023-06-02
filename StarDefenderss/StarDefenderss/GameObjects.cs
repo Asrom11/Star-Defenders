@@ -4,13 +4,11 @@ public enum GameObjects
 {
     Base = 1,
     Enemy,
+    EnemySniper,
+    EnemyDrone,
     Wall,
     Path,
     FirstOp,
     TankOp,
-    Ditection = 7,
-    Up,
-    Down ,
-    Left ,
-    Right
+    Sniper
 }

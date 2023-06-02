@@ -11,9 +11,9 @@ public interface IGameplayView
     event EventHandler<CharacterSpawnedEventArgs> CharacterSpawned;
      event EventHandler<ActivateUltimate> ActivateUltimate;
 
-    void LoadGameCycleParameters(Dictionary<int, IObject> Objects);
+    void LoadGameCycleParameters(Dictionary<int, IObject> Objects, int currency, int PlayerLives);
 
-    void LoadCurrencyValue(int currentCurrency);
+    void SetGameStatus(bool GameStatus);
     void Run();
 }
 

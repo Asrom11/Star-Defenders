@@ -11,7 +11,6 @@ public class Path: IObject
     public float Rotation { get; set; }
     public Color Color { get; set; }
     public Vector2 Pos { get; set; }
-    public bool IsSpawned { get; set; }
 
     public Path()
     {
