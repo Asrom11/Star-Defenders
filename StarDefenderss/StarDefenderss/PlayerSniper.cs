@@ -32,12 +32,13 @@ public class PlayerSniper:Character, IObject, IAttackable, IOperator
         MaxHealth = healthPoints;
         CurrentHealth = healthPoints;
         AttackRange = 150;
-        Attack = 100;
+        Attack = attack;
         MaxMana = 100;
         CurrentMana = 0;
         IsSniper = true;
         IsOnWall = IsSniper;
-        BlockCount = 1;
+        Defense = defense;
+        AttackRange = 60;
     }
     public void Update(GameTime gameTime)
     {

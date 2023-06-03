@@ -37,8 +37,9 @@ public class TankOperator: Character, IObject, IAttackable,IOperator
         BlockCount = 4;
         MaxHealth = healthPoints;
         CurrentHealth = healthPoints;
+        Defense = defense;
         AttackRange = 60;
-        Attack = 1;
+        Attack = attack;
         ultimateTimer = new Timer(3000);
         ultimateTimer.Elapsed += OnUltimateTimerElapsed;
         ultimateTimer.AutoReset = false;

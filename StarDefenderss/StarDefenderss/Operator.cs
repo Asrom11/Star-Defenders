@@ -30,15 +30,16 @@ public class Operator: Character, IAttackable, IOperator
         Vector2 position, int guaranteedAttack, int currency, GameObjects operType) : base(healthPoints, attack, defense, speed, damageResistance,
         position, guaranteedAttack,operType,currency,Color.Blue)
     {
+        Currency = currency;
         Color = Color.White;
         Scale = 1f;
+        MaxMana = 100;
+        BlockCount = 4;
         MaxHealth = healthPoints;
         CurrentHealth = healthPoints;
-        AttackRange = 1;
-        Attack = 100;
-        MaxMana = 100;
-        CurrentMana = 0;
-        BlockCount = 2;
+        Defense = defense;
+        AttackRange = 80;
+        Attack = attack;
         ultimateTimer = new Timer(3000);
         ultimateTimer.Elapsed += OnUltimateTimerElapsed;
         ultimateTimer.AutoReset = false;
@@ -58,7 +59,7 @@ public class Operator: Character, IAttackable, IOperator
 
     public void Update(GameTime gameTime)
     {
-        var nearbyObjects = _grid.GetNearbyObjects(Pos, 80);
+        var nearbyObjects = _grid.GetNearbyObjects(Pos, AttackRange);
         CurrentMana = CurrentMana + 10 > 100 ? 100 : CurrentMana + 10;
         CurrentBlock = 0;
         foreach (var obj in nearbyObjects)

@@ -58,9 +58,9 @@ public class GameCycle: IGameplayModel
         _opertorsHp.Add(GameObjects.Sniper, 200);
         
         _operators = new Dictionary<GameObjects, IOperator>();
-        _operators.Add(GameObjects.FirstOp, new Operator(_opertorsHp[GameObjects.FirstOp],10,1,1,1, new Vector2(0,0), 1,100, GameObjects.FirstOp));
-        _operators.Add(GameObjects.TankOp, new TankOperator(_opertorsHp[GameObjects.TankOp],10,1,1,1, new Vector2(0,0), 1, 100,GameObjects.TankOp));
-        _operators.Add(GameObjects.Sniper, new PlayerSniper(_opertorsHp[GameObjects.Sniper],100,100,0,100,new Vector2(0,0),10,GameObjects.Sniper, 100));
+        _operators.Add(GameObjects.FirstOp, new Operator(_opertorsHp[GameObjects.FirstOp],100,15,0,15, new Vector2(0,0), 1,100, GameObjects.FirstOp));
+        _operators.Add(GameObjects.TankOp, new TankOperator(_opertorsHp[GameObjects.TankOp],50,1,0,15, new Vector2(0,0), 1, 100,GameObjects.TankOp));
+        _operators.Add(GameObjects.Sniper, new PlayerSniper(_opertorsHp[GameObjects.Sniper],25,30,0,100,new Vector2(0,0),10,GameObjects.Sniper, 100));
 
         _gridWithOperators = new Grid(TileSize);
         _gridWithEnemys = new Grid(TileSize);
