@@ -5,6 +5,7 @@ using System.Reflection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Media;
 
 namespace StarDefenderss;
 
@@ -14,7 +15,7 @@ public class GameCycleView : Game, IGameplayView
     private Dictionary<GameObjects, Texture2D> _textures = new();
     private CharacterMenu _characterMenu;
     private GraphicsDeviceManager _graphics;
-
+    private Song backgroundMusic;
     private int _playerLives;
     private int _currency;
     private SpriteBatch _spriteBatch;
@@ -43,12 +44,15 @@ public class GameCycleView : Game, IGameplayView
         _graphics.IsFullScreen = false;
         _graphics.PreferredBackBufferWidth = 1280;
         _graphics.PreferredBackBufferHeight = 720;
+        MediaPlayer.Play(backgroundMusic);
+        MediaPlayer.IsRepeating = true;
         _graphics.ApplyChanges();
     }
 
     protected override void LoadContent()
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
+        backgroundMusic = Content.Load<Song>("backgroundMusic");
         _textures.Add(GameObjects.Base, Content.Load<Texture2D>("square"));
         _textures.Add(GameObjects.Enemy, Content.Load<Texture2D>("easyEnemy"));
         _textures.Add(GameObjects.Wall, Content.Load<Texture2D>("Grass"));

@@ -85,3 +85,5 @@ C:\Users\Admin\RiderProjects\Star-Defenders\StarDefenderss\StarDefenderss\bin\De
 C:\Users\Admin\RiderProjects\Star-Defenders\StarDefenderss\StarDefenderss\bin\Debug\net6.0-windows\Content\EnemySniper.xnb
 C:\Users\Admin\RiderProjects\Star-Defenders\StarDefenderss\StarDefenderss\bin\Debug\net6.0-windows\Content\sniper.xnb
 C:\Users\Admin\RiderProjects\Star-Defenders\StarDefenderss\StarDefenderss\bin\Debug\net6.0-windows\Content\EnemyDrone.xnb
+C:\Users\Admin\RiderProjects\Star-Defenders\StarDefenderss\StarDefenderss\bin\Debug\net6.0-windows\Content\backgroundMusic.wma
+C:\Users\Admin\RiderProjects\Star-Defenders\StarDefenderss\StarDefenderss\bin\Debug\net6.0-windows\Content\backgroundMusic.xnb
