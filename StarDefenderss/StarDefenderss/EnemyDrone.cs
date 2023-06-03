@@ -16,14 +16,14 @@ public class EnemyDrone: Character, IAttackable,IEnemy
     public override int GuaranteedAttack { get; set; }
     public override int Currency { get; set; }
     public float Scale { get; set; }
-    public bool isOnWall { get; set; }
+    public bool IsOnWall { get; set; }
     public float Rotation { get; set; }
     public Vector2 Pos { get; set; }
     public override bool IsSpawned { get; set; }
     private readonly int _tileSize;
     static List<Node> _path;
-    private Vector2 startPos;
-    private Vector2 endPos;
+    private Vector2 _startPos;
+    private Vector2 _endPos;
 
     public EnemyDrone(int healthPoints, int attack, int defense, int speed, int damageResistance, 
         Vector2 position, List<Node> bestPath,int guaranteedAttack, GameObjects objectType, int curency, int tileSize) : base(healthPoints, attack, defense, speed, damageResistance, position, guaranteedAttack, objectType, curency, Color.Red)
@@ -32,8 +32,8 @@ public class EnemyDrone: Character, IAttackable,IEnemy
         Pos = position;
         Color = Color.White;
         _path = bestPath;
-        this.startPos = new Vector2(startPos.X, startPos.Y);
-        this.endPos = new Vector2(endPos.X, endPos.Y);
+        this._startPos = new Vector2(_startPos.X, _startPos.Y);
+        this._endPos = new Vector2(_endPos.X, _endPos.Y);
         Scale = 1f;
     }
     
@@ -52,7 +52,7 @@ public class EnemyDrone: Character, IAttackable,IEnemy
         }
     }
     
-    public void TakeDamage(int damage)
+    public override void TakeDamage(int damage)
     {
         var damageFromPlayer = damage;
         CurrentHealth -= damageFromPlayer >= 0 ? damageFromPlayer : GuaranteedAttack;

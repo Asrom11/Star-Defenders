@@ -1,3 +1,4 @@
+using System.Timers;
 using Microsoft.Xna.Framework;
 
 namespace StarDefenderss;
@@ -15,12 +16,15 @@ public class Operator: Character, IAttackable, IOperator
     public override int Currency { get; set; }
     public float Scale { get; set; }
     public float Rotation { get; set; }
-    public Color Color { get; set; }
+    public new Color Color { get; set; }
     public Vector2 Pos{ get; set; }
     public override bool IsSpawned { get; set; }
     public Grid _grid { get; set; }
-    public bool isOnWall { get; set; }
-    public bool isSniper { get; }
+    public bool IsOnWall { get; set; }
+    public bool IsSniper { get;}
+    public int TempAttack { get; set; }
+    public int TempDefense { get; set; }
+    public Timer ultimateTimer { get; }
 
     public Operator(int healthPoints, int attack, int defense, int speed, int damageResistance,
         Vector2 position, int guaranteedAttack, int currency, GameObjects operType) : base(healthPoints, attack, defense, speed, damageResistance,
@@ -35,11 +39,21 @@ public class Operator: Character, IAttackable, IOperator
         MaxMana = 100;
         CurrentMana = 0;
         BlockCount = 2;
+        ultimateTimer = new Timer(3000);
+        ultimateTimer.Elapsed += OnUltimateTimerElapsed;
+        ultimateTimer.AutoReset = false;
+    }
+    
+    private void OnUltimateTimerElapsed(object sender, ElapsedEventArgs e)
+    {
+        TempAttack = 0;
+        TempDefense = 0;
+        CurrentHealth -= 50;
     }
     public override void TakeDamage(int damage)
     {
-        var damageFromPlayer = damage;
-        CurrentHealth -= damageFromPlayer >= 0 ? damageFromPlayer : GuaranteedAttack;
+        var damageFromEnemy = (damage - (DamageResistance + TempDefense)) < 0 ? 0 : damage - (DamageResistance + TempDefense);
+        CurrentHealth -= damageFromEnemy >= 0 ? damageFromEnemy : GuaranteedAttack;
     }
 
     public void Update(GameTime gameTime)
@@ -49,15 +63,18 @@ public class Operator: Character, IAttackable, IOperator
         CurrentBlock = 0;
         foreach (var obj in nearbyObjects)
         {
-            obj.TakeDamage(100);
+            obj.TakeDamage(Attack + TempAttack);
             return;
         }
     }
 
     public void ActivUltimate()
     {
-        if (CurrentMana != 100) return;
-        CurrentHealth = 0;
+        if (ultimateTimer.Enabled) return;
         CurrentMana = 0;
+        TempAttack = 300;
+        TempDefense = 300;
+        ultimateTimer.Start();
     }
+    
 }

@@ -24,11 +24,8 @@ public class Enemy: Character,  IAttackable,IEnemy
     public float Rotation { get; set; }
     public Color Color { get; set; }
     public Vector2 Pos { get; set; }
-    public bool isOnWall { get; set; }
+    public bool IsOnWall { get; set; }
     public override bool IsSpawned { get; set; }
-    private Vector2 _basePos;
-    private Node _startNode;
-    private Node _endNode;
     private List<Node> _path;
     public Enemy(int healthPoints, int attack, int defense, int speed, int damageResistance,
         Vector2 position, Node startNode, Node endNode, int guaranteedAttack, int tileSize, GameObjects enemyType, Grid grid):
@@ -63,10 +60,10 @@ public class Enemy: Character,  IAttackable,IEnemy
         
         foreach (var obj in nearbyObjects)
         {   
-            if (obj.CurrentBlock >= obj.BlockCount || obj.isOnWall)
+            if (obj.CurrentBlock >= obj.BlockCount || obj.IsOnWall)
                 continue;
             obj.CurrentBlock++;
-            obj.TakeDamage(0);
+            obj.TakeDamage(Attack);
             return;
         }
         

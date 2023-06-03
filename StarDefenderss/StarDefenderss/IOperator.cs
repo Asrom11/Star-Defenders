@@ -1,5 +1,5 @@
 using Microsoft.Xna.Framework;
-
+using System.Timers;
 namespace StarDefenderss;
 
 public interface IOperator: IObject
@@ -9,7 +9,13 @@ public interface IOperator: IObject
     
     int Currency { get; set; }
     void Update(GameTime gameTime);
-    bool isSniper { get; }
+    bool IsSniper { get; }
+
+    int TempAttack { get; }
+    int TempDefense { get; }
+    Timer ultimateTimer { get; }
+    
+    void OnUltimateTimerElapsed(object sender, ElapsedEventArgs e){}
 
     void ActivUltimate();
 }

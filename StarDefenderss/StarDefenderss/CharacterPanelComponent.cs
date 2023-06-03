@@ -10,7 +10,6 @@ public class CharacterMenu
     private List<GameObjects> character = new ();
     private Dictionary<GameObjects, Texture2D> _textures = new();
     private int selectedCharacterIndex;
-    public event EventHandler<CharacterSpawnedEventArgs> CharacterSelected;
     private const int characterSize = 50;
     private int yPos;
     

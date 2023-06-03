@@ -12,9 +12,8 @@ public static class Program
     [STAThread]
     static void Main()
     {
-        var characterTextures = new List<Texture2D>();
         var game = new GameplayPresenter(
-            new GameCycleView(characterTextures), new GameCycle());
+            new GameCycleView(), new GameCycle());
         game.LaunchGame();
     }
 }

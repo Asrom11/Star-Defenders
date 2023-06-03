@@ -8,7 +8,7 @@ public interface IAttackable:  IObject
     int Attack { get; }
     void TakeDamage(int damage);
     
-    bool isOnWall { get; set; }
+    bool IsOnWall { get; set; }
 
     Grid _grid { get; set; }
 }

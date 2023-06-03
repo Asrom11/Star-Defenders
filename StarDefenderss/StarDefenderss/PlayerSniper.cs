@@ -1,3 +1,4 @@
+using System.Timers;
 using Microsoft.Xna.Framework;
 
 namespace StarDefenderss.Content;
@@ -9,7 +10,7 @@ public class PlayerSniper:Character, IObject, IAttackable, IOperator
     public int CurrentBlock { get; set; }
     public float AttackRange { get; }
     public override int Attack { get; set; }
-    public bool isOnWall { get; set; }
+    public bool IsOnWall { get; set; }
     public Grid _grid { get; set; }
     public override int Defense { get; set; }
     public override int DamageResistance { get; set; }
@@ -18,7 +19,10 @@ public class PlayerSniper:Character, IObject, IAttackable, IOperator
     public float Scale { get; set; }
     public float Rotation { get; set; }
     public Vector2 Pos { get; set; }
-    public bool isSniper { get; }
+    public bool IsSniper { get; }
+    public int TempAttack { get; }
+    public int TempDefense { get; }
+    public Timer ultimateTimer { get; }
     public override bool IsSpawned { get; set; }
     public PlayerSniper(int healthPoints, int attack, int defense, int speed, int damageResistance, Vector2 position, int guaranteedAttack, 
         GameObjects objectType, int curency) : base(healthPoints, attack, defense, speed, damageResistance, position, guaranteedAttack, objectType, curency, Color.Blue)
@@ -31,8 +35,8 @@ public class PlayerSniper:Character, IObject, IAttackable, IOperator
         Attack = 100;
         MaxMana = 100;
         CurrentMana = 0;
-        isSniper = true;
-        isOnWall = isSniper;
+        IsSniper = true;
+        IsOnWall = IsSniper;
         BlockCount = 1;
     }
     public void Update(GameTime gameTime)
@@ -42,13 +46,21 @@ public class PlayerSniper:Character, IObject, IAttackable, IOperator
         CurrentMana = CurrentMana + 10 > 100 ? 100 : CurrentMana + 10;
         foreach (var obj in nearbyObjects)
         {
-            obj.TakeDamage(1);
+            obj.TakeDamage(Attack);
             return;
         }
     }
-    
+
+    public override void TakeDamage(int damage)
+    {
+        var damageFromEnemy = (damage - (DamageResistance + TempDefense)) < 0 ? 0 : damage - (DamageResistance + TempDefense);
+        CurrentHealth -= damageFromEnemy >= 0 ? damageFromEnemy : GuaranteedAttack;
+    }
+
     public void ActivUltimate()
     {
+        CurrentMana = 0;
+        CurrentHealth = 0;
     }
 
 }

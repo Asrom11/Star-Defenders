@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework;
 
 namespace StarDefenderss;
 
-public class SniperEnemy: Character, IObject, IAttackable,IEnemy
+public class SniperEnemy: Character, IAttackable,IEnemy
 {
     public override int Speed { get; set; }
     public int BlockCount { get; set; }
@@ -16,7 +16,7 @@ public class SniperEnemy: Character, IObject, IAttackable,IEnemy
     public override int GuaranteedAttack { get; set; }
     public override int Currency { get; set; }
     public override bool IsSpawned { get; set; }
-    public bool isOnWall { get; set; }
+    public bool IsOnWall { get; set; }
     public float Scale { get; set; }
     public float Rotation { get; set; }
     public Vector2 Pos { get; set; }
@@ -36,7 +36,7 @@ public class SniperEnemy: Character, IObject, IAttackable,IEnemy
         _path.RemoveAt(0);
         Scale =1;
         AttackRange = 1000;
-        Attack = 100;
+        Attack = 25;
         _attackTimeCounter = 0;
         _distanceAtackTime = true;
         _canMove = true;
@@ -63,7 +63,7 @@ public class SniperEnemy: Character, IObject, IAttackable,IEnemy
                 continue;
             if (Vector2.Distance(Pos, obj.Pos) > _tileSize && _distanceAtackTime)
             {
-                obj.TakeDamage(1);
+                obj.TakeDamage(Attack);
                 _distanceAtackTime = false;
                 _canMove = false;
                 return;
@@ -71,7 +71,7 @@ public class SniperEnemy: Character, IObject, IAttackable,IEnemy
 
             if (!(Vector2.Distance(Pos, obj.Pos) < _tileSize)) continue;
             
-            obj.TakeDamage(1);
+            obj.TakeDamage(Attack);
             return;
         }
 
@@ -92,7 +92,7 @@ public class SniperEnemy: Character, IObject, IAttackable,IEnemy
         }
     }
     
-    public void TakeDamage(int damage)
+    public override void TakeDamage(int damage)
     {
         var damageFromPlayer = (damage * DamageResistance);
         CurrentHealth -= damageFromPlayer >= 0 ? damageFromPlayer : GuaranteedAttack;

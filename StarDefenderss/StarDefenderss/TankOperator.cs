@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Timers;
 using Microsoft.Xna.Framework;
 
 namespace StarDefenderss;
@@ -6,7 +7,6 @@ namespace StarDefenderss;
 public class TankOperator: Character, IObject, IAttackable,IOperator
 {
     public override int Speed { get; set; }
-    public Vector2 Position { get; }
     public int BlockCount { get; set; }
     public int CurrentBlock { get; set; }
     public float AttackRange { get; }
@@ -16,13 +16,17 @@ public class TankOperator: Character, IObject, IAttackable,IOperator
     public override int DamageResistance { get; set; }
     public override int GuaranteedAttack { get; set; }
     public override int Currency { get; set; }
-    public bool isOnWall { get; set; }
+    public bool IsOnWall { get; set; }
     public float Scale { get; set; }
     public float Rotation { get; set; }
-    public Color Color { get; set; }
+    public new Color Color { get; set; }
     public Vector2 Pos { get; set; }
     public override bool IsSpawned { get; set; }
-    public bool isSniper { get; }
+    public bool IsSniper { get; }
+    public int TempAttack { get; set; }
+    public int TempDefense { get; set; }
+    public Timer ultimateTimer { get; }
+
     public TankOperator(int healthPoints, int attack, int defense, int speed, int damageResistance, Vector2 position, int guaranteedAttack, int currency, GameObjects OperatorType) : 
         base(healthPoints, attack, defense, speed, damageResistance, position, guaranteedAttack, OperatorType, currency, Color.Blue)
     {
@@ -33,6 +37,16 @@ public class TankOperator: Character, IObject, IAttackable,IOperator
         BlockCount = 4;
         MaxHealth = healthPoints;
         CurrentHealth = healthPoints;
+        AttackRange = 60;
+        Attack = 1;
+        ultimateTimer = new Timer(3000);
+        ultimateTimer.Elapsed += OnUltimateTimerElapsed;
+        ultimateTimer.AutoReset = false;
+    }
+    private void OnUltimateTimerElapsed(object sender, ElapsedEventArgs e)
+    {
+        TempAttack = 0;
+        TempDefense = 0;
     }
     public void Update(GameTime gameTime)
     {
@@ -41,20 +55,22 @@ public class TankOperator: Character, IObject, IAttackable,IOperator
         CurrentBlock = 0;
         foreach (var obj in nearbyObjects)
         {
-            obj.TakeDamage(Attack);
+            obj.TakeDamage(Attack + TempAttack);
         }
     }
     
 
     public void ActivUltimate()
     {
+        if (ultimateTimer.Enabled) return;
         CurrentMana = 0;
-        CurrentHealth = 0;
+        TempDefense = 1000;
+        ultimateTimer.Start();
     }
 
     public override void TakeDamage(int damage)
     {
-        var damageFromEnemy = (damage - DamageResistance);
+        var damageFromEnemy = (damage - (DamageResistance + TempDefense)) < 0 ? 0 : damage - (DamageResistance + TempDefense);
         CurrentHealth -= damageFromEnemy >= 0 ? damageFromEnemy : GuaranteedAttack;
     }
 }

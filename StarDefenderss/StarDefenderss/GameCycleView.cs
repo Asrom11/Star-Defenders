@@ -12,25 +12,24 @@ public class GameCycleView : Game, IGameplayView
 {
     private Dictionary<int, IObject> _objects = new();
     private Dictionary<GameObjects, Texture2D> _textures = new();
-    private CharacterMenu characterMenu;
+    private CharacterMenu _characterMenu;
     private GraphicsDeviceManager _graphics;
 
-    public int playerLives;
-    private int currency;
-    private TimeSpan currencyTimer;
+    private int _playerLives;
+    private int _currency;
     private SpriteBatch _spriteBatch;
-    private float elapsedTime;
-    private SpriteFont font;
+    private SpriteFont _font;
     private Texture2D _blankTexture;
-    private bool GameStatus;
-    private bool isDone;
+    private bool _gameStatus;
+    private bool _isDone;
+    
     private HashSet<GameObjects> _spawnedCharacters;
     public event EventHandler<CycleHasFinished> CycleFinished;
     public event EventHandler<ActivateUltimate> ActivateUltimate;
     public event EventHandler<CharacterSpawnedEventArgs> CharacterSpawned;
 
 
-    public GameCycleView(List<Texture2D> characters)
+    public GameCycleView()
     {
         _graphics = new GraphicsDeviceManager(this);
         Content.RootDirectory = "Content";
@@ -59,7 +58,7 @@ public class GameCycleView : Game, IGameplayView
         _textures.Add(GameObjects.EnemySniper, Content.Load<Texture2D>("EnemySniper"));
         _textures.Add(GameObjects.Sniper, Content.Load<Texture2D>("sniper"));
         _textures.Add(GameObjects.EnemyDrone, Content.Load<Texture2D>("EnemyDrone"));
-        font = Content.Load<SpriteFont>("Font");
+        _font = Content.Load<SpriteFont>("Font");
         
         _blankTexture = new Texture2D(GraphicsDevice, 1, 1);
         _blankTexture.SetData(new[] { Color.White });
@@ -67,7 +66,7 @@ public class GameCycleView : Game, IGameplayView
         operators.Add(GameObjects.FirstOp);
         operators.Add(GameObjects.TankOp);
         operators.Add(GameObjects.Sniper);
-        characterMenu = new CharacterMenu(operators,_textures);
+        _characterMenu = new CharacterMenu(operators,_textures);
     }
 
     protected override void Update(GameTime gameTime)
@@ -78,7 +77,7 @@ public class GameCycleView : Game, IGameplayView
     
         base.Update(gameTime);
         InputManager.Update();
-        characterMenu.Update();
+        _characterMenu.Update();
         SpawnCharacter();
         CheckUltimate();
         CycleFinished(this,new CycleHasFinished(){GameTime = gameTime});
@@ -103,15 +102,15 @@ public class GameCycleView : Game, IGameplayView
                 SpriteEffects.None, 0f);
         }
 
-        switch (GameStatus)
+        switch (_gameStatus)
         {
-            case false when isDone:
+            case false when _isDone:
             {
                 var gameOverText = "GAME OVER\nPress ESC to exit";
                 DrawGameStatus(gameOverText);
                 break;
             }
-            case true when isDone:
+            case true when _isDone:
             {
                 var gameWinText = "GAME WIN!\nPress ESC to exit";
                 DrawGameStatus(gameWinText);
@@ -119,10 +118,10 @@ public class GameCycleView : Game, IGameplayView
             }
         }
         
-        characterMenu.Draw(_spriteBatch, GraphicsDevice.Viewport.Height,_spawnedCharacters);
-        _spriteBatch.DrawString(font, $"Lives: {playerLives}",
+        _characterMenu.Draw(_spriteBatch, GraphicsDevice.Viewport.Height,_spawnedCharacters);
+        _spriteBatch.DrawString(_font, $"Lives: {_playerLives}",
             new Vector2(GraphicsDevice.Viewport.Width - 150, GraphicsDevice.Viewport.Height - 50), Color.White);
-        _spriteBatch.DrawString(font, $"Currency: {currency}",
+        _spriteBatch.DrawString(_font, $"Currency: {_currency}",
             new Vector2(GraphicsDevice.Viewport.Width - 150, GraphicsDevice.Viewport.Height - 30), Color.White);
         _spriteBatch.End();
         base.Draw(gameTime);
@@ -130,11 +129,11 @@ public class GameCycleView : Game, IGameplayView
 
     private void DrawGameStatus(string gameText)
     {
-        var textSize = font.MeasureString(gameText);
+        var textSize = _font.MeasureString(gameText);
         var textPosition = new Vector2(
             GraphicsDevice.Viewport.Width / 2 - textSize.X / 2,
             GraphicsDevice.Viewport.Height / 2 - textSize.Y / 2);
-        _spriteBatch.DrawString(font, gameText, textPosition, Color.Red, 0, Vector2.Zero, 2f, SpriteEffects.None, 0);
+        _spriteBatch.DrawString(_font, gameText, textPosition, Color.Red, 0, Vector2.Zero, 2f, SpriteEffects.None, 0);
     }
     private void CheckUltimate()
     {
@@ -146,9 +145,9 @@ public class GameCycleView : Game, IGameplayView
 
     private void SpawnCharacter()
     {
-        if (!InputManager.IsMouseLeftButtonPressed() || !characterMenu.IsCharacterSelected()) return;
+        if (!InputManager.IsMouseLeftButtonPressed() || !_characterMenu.IsCharacterSelected()) return;
         var mousePosition = InputManager.GetMousePosition();
-        var selectedCharacter = characterMenu.GetSelectedCharacter();
+        var selectedCharacter = _characterMenu.GetSelectedCharacter();
         CharacterSpawned?.Invoke(this, new CharacterSpawnedEventArgs { Position = mousePosition.ToVector2(), SpawnedCharacter = selectedCharacter });
     }
     private void DrawHealthBar( Vector2 position, int currentHealth, int maxHealth, Color color)
@@ -182,14 +181,14 @@ public class GameCycleView : Game, IGameplayView
     public void LoadGameCycleParameters(Dictionary<int, IObject> Objects, int currency, int PlayerLives, HashSet<GameObjects> spawnedCharacters)
     {
         _objects = Objects;
-        this.currency = currency;
-        playerLives = PlayerLives;
+        this._currency = currency;
+        _playerLives = PlayerLives;
         _spawnedCharacters = spawnedCharacters;
     }
 
     public void SetGameStatus(bool GameStatus)
     {
-        this.GameStatus = GameStatus;
-        isDone = true;
+        this._gameStatus = GameStatus;
+        _isDone = true;
     }
 }

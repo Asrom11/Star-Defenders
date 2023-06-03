@@ -12,9 +12,8 @@ namespace StarDefenderss;
 public class GameCycle: IGameplayModel
 {
     private const int TileSize = 40;
-
-    public event EventHandler<CharacterSpawnedEventArgs> CharacterSelected;
     public event EventHandler<GamePlayStatus> GameStatus;
+    public event EventHandler<GameplayEventArgs> Updated;
     public int PlayerLives { get; set; }
     public Dictionary<int, IObject> Objects { get; set; }
     
@@ -22,38 +21,35 @@ public class GameCycle: IGameplayModel
     private Grid _gridWithEnemys;
 
     private HashSet<Point> _wallCoordinats = new ();
-    public event EventHandler<GameplayEventArgs> Updated;
     public int Currency { get; set; }
     private HashSet<GameObjects> _spawnedCharacters = new (); 
     private Dictionary<GameObjects, IOperator> _operators;
-    private Dictionary<GameObjects, IEnemy> _enemies;
     private Dictionary<GameObjects, int> _opertorsHp = new();
-    private HashSet<IOperator> activeOperators = new ();
-    private HashSet<IEnemy> spawnedEnemys = new ();
+    private HashSet<IOperator> _activeOperators = new ();
+    private HashSet<IEnemy> _spawnedEnemys = new ();
+    private Queue<IEnemy> _enemiesToSpawn = new ();
     
     private Timer _currencyTimer;
     private int _currentId = 1;
-    private Vector2 BasePos;
-    private Vector2 EnemyPos;
+    private Vector2 _basePos;
+    private Vector2 _enemyPos;
     private Node[,] _nodes;
-    private int waveCount;
+    private int _waveCount;
     private const float currencyInterval = 100;
     private const int valuetAdd = 5;
-    private  int width;
-    private  int height;
-    private GameObjects selectedDirection = 0;
-    private bool isEnd;
-    private int spawnDelay = 1000;
-    private int timeSinceLastSpawn = 0;
-    private Queue<IEnemy> enemiesToSpawn = new ();
+    private  int _width;
+    private  int _height;
+    private bool _isEnd;
+    private const int SpawnDelay = 1000;
+    private int _timeSinceLastSpawn = 0;
     public void Initialize(string levelName)
     {
         PlayerLives = 3;
         var textMap = File.ReadAllText("Maps/" + levelName);
         var lines = textMap.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
         Objects = new Dictionary<int, IObject>();
-        width = lines[0].Length;
-        height = lines.Length;
+        _width = lines[0].Length;
+        _height = lines.Length;
         InitializeMap(lines);
         InitializeGraph(lines);
 
@@ -75,11 +71,11 @@ public class GameCycle: IGameplayModel
     }
     private void RealeseEnemyWave()
     {
-        if (enemiesToSpawn.Count <= 0) return;
-        var enemy = enemiesToSpawn.Dequeue();
+        if (_enemiesToSpawn.Count <= 0) return;
+        var enemy = _enemiesToSpawn.Dequeue();
         _currentId++;
         enemy.UnicId = _currentId;
-        spawnedEnemys.Add(enemy);
+        _spawnedEnemys.Add(enemy);
         _gridWithEnemys.Add((IAttackable)enemy);
         Objects.Add(_currentId, enemy);
     }
@@ -89,7 +85,7 @@ public class GameCycle: IGameplayModel
         for (var x = 0; x < lines[0].Length; x++)
         {
             var generatedObject = MapGenerator.GenerateObject(
-                lines[x][y], x, y, ref EnemyPos, ref BasePos);
+                lines[x][y], x, y, ref _enemyPos, ref _basePos);
             if (lines[x][y] == 'W') _wallCoordinats.Add(new Point(x, y));
             Objects.Add(_currentId, generatedObject);
             _currentId++;
@@ -102,19 +98,28 @@ public class GameCycle: IGameplayModel
 
     private void InitializeGraph(string[] lines)
     {
-        _nodes = new Node[width, height];
+        CreateNodes();
+        AddNeighborsNode();
+    }
 
-        for (var x = 0; x < width; x++)
+    private void CreateNodes()
+    {     
+        _nodes = new Node[_width, _height];
+        for (var x = 0; x < _width; x++)
         {
-            for (var y = 0; y < height; y++)
+            for (var y = 0; y < _height; y++)
             {
                 _nodes[x, y] = new Node(x, y);
             }
         }
-
-        for (var x = 0; x < width; x++)
+        
+    }
+    private void AddNeighborsNode()
+    {
+        
+        for (var x = 0; x < _width; x++)
         {
-            for (var y = 0; y < height; y++)
+            for (var y = 0; y < _height; y++)
             {
                 var node = _nodes[x, y];
                 var neighbors = new List<Point>
@@ -125,7 +130,7 @@ public class GameCycle: IGameplayModel
                     new (x, y + 1)
                 };
 
-                foreach (var neighbor in neighbors.Where(neighbor => neighbor.X >= 0 && neighbor.X < width && neighbor.Y >= 0 && neighbor.Y < height &&
+                foreach (var neighbor in neighbors.Where(neighbor => neighbor.X >= 0 && neighbor.X < _width && neighbor.Y >= 0 && neighbor.Y < _height &&
                                                                      !_wallCoordinats.Contains(neighbor)))
                 {
                     node.Neighbors.Add(_nodes[neighbor.X, neighbor.Y]);
@@ -135,30 +140,48 @@ public class GameCycle: IGameplayModel
     }
     public void Update(GameTime gameTime)
     {
-        if (isEnd) return;
+        if (_isEnd) return;
         
         _gridWithEnemys.Clear();
         MoveEnemy(gameTime);
         UpdatePlayer(gameTime);
-        if (CheckEnemysGrid() && enemiesToSpawn.Count == 0 )
+        if (CheckEnemysGrid() && _enemiesToSpawn.Count == 0 )
             SpawnEnemy();
-        timeSinceLastSpawn += gameTime.ElapsedGameTime.Milliseconds;
-        if (timeSinceLastSpawn >= spawnDelay)
-        {
-            RealeseEnemyWave();
-            timeSinceLastSpawn = 0;
-        }
-
-        if (waveCount == 3 && enemiesToSpawn.Count == 0 && spawnedEnemys.Count == 0)
-        {
-            isEnd = true;
-            GameStatus.Invoke(this, new GamePlayStatus
-            {
-                GameIsWin = true
-            });
-        }
+        _timeSinceLastSpawn += gameTime.ElapsedGameTime.Milliseconds;
+        CheckWaweSpawn();
+        CheckGameStatus();
         Updated.Invoke(this, new GameplayEventArgs { Objects = this.Objects, Currencys = Currency, 
             PlayerLives = PlayerLives, spawnedCharacters = _spawnedCharacters});
+    }
+
+    private void CheckGameStatus()
+    {
+        if (PlayerLives <= 0)
+        {
+            _isEnd = true;
+            _currencyTimer.Stop();
+            GameStatus.Invoke(this, new GamePlayStatus()
+            {
+                GameIsWin = false
+            });
+            return;
+        }
+
+        if (_waveCount != 3 || _enemiesToSpawn.Count != 0 || _spawnedEnemys.Count != 0) return;
+
+        _isEnd = true;
+        GameStatus.Invoke(this, new GamePlayStatus {
+            GameIsWin = true
+        });
+    }
+
+    private void CheckWaweSpawn()
+    {
+        if (_timeSinceLastSpawn >= SpawnDelay)
+        {
+            RealeseEnemyWave();
+            _timeSinceLastSpawn = 0;
+        }
     }
 
     private bool CheckEnemysGrid()
@@ -167,39 +190,39 @@ public class GameCycle: IGameplayModel
     }
     private void MoveEnemy(GameTime gameTime)
     {
-        foreach (var obj in spawnedEnemys)
+        foreach (var obj in _spawnedEnemys)
         {
             obj.Update(gameTime);
             var currentEnemy = obj as Character;
-            if (CheckHp(currentEnemy, currentEnemy.CurrentHealth))
+            if (HpIsZero(currentEnemy, currentEnemy.CurrentHealth))
             {
                 Objects.Remove(obj.UnicId);
-                spawnedEnemys.Remove(obj);
+                _spawnedEnemys.Remove(obj);
                 continue;
             }
             
-            if ( !(Vector2.Distance(obj.Pos,BasePos) > 5f))
+            if (DistanceToBase(obj) < 5)
             {
-                PlayerLives--;
-                spawnedEnemys.Remove(obj);
-                Objects.Remove(obj.UnicId);
-                
-                if (PlayerLives <= 0)
-                {
-                    isEnd = true;
-                    _currencyTimer.Stop();
-                    GameStatus.Invoke(this, new GamePlayStatus()
-                    {
-                        GameIsWin = false
-                    });
-                }
+                ChangePlayerLives(obj);
                 continue;
             }
             _gridWithEnemys.Add((IAttackable)obj);
         }
     }
 
-    private bool CheckHp(Character character, int health)
+    private float DistanceToBase(IEnemy obj)
+    {
+        return Vector2.Distance(obj.Pos, _basePos);
+    }
+
+    private void ChangePlayerLives(IEnemy obj)
+    {
+        PlayerLives--;
+        _spawnedEnemys.Remove(obj);
+        Objects.Remove(obj.UnicId);
+        CheckGameStatus();
+    }
+    private bool HpIsZero(Character character, int health)
     {
         if (character.CurrentHealth > 0) return false;
         
@@ -210,17 +233,17 @@ public class GameCycle: IGameplayModel
     
     private void UpdatePlayer(GameTime gameTime)
     {
-        foreach (var obj in activeOperators)
+        foreach (var obj in _activeOperators)
         {
             var currentPlayer = obj as Character;
             
-            if (CheckHp(currentPlayer, currentPlayer.CurrentHealth))
+            if (HpIsZero(currentPlayer, currentPlayer.CurrentHealth))
             {
                 obj.IsSpawned = false;
                 Objects.Remove(obj.UnicId);
                 _spawnedCharacters.Remove(obj.ImageId);
                 _gridWithOperators.Remove(obj as IAttackable);
-                activeOperators.Remove(obj);
+                _activeOperators.Remove(obj);
             }
             obj.Update(gameTime);
         }
@@ -240,19 +263,19 @@ public class GameCycle: IGameplayModel
     }
     private void SpawnEnemy ()
     {
-        var nodeEnemy = _nodes[(int)(EnemyPos.X / TileSize), (int)(EnemyPos.Y / TileSize)];
-        var nodeBase = _nodes[(int)BasePos.X / TileSize, (int)BasePos.Y / TileSize];
-        waveCount++;
+        var nodeEnemy = _nodes[(int)(_enemyPos.X / TileSize), (int)(_enemyPos.Y / TileSize)];
+        var nodeBase = _nodes[(int)_basePos.X / TileSize, (int)_basePos.Y / TileSize];
+        _waveCount++;
         var enemysToSpawn = new List<IEnemy>();
         
-        switch (waveCount)
+        switch (_waveCount)
         {
             case 1:
             {
                 for (var i = 0; i < 4; i++)
                 {
                     var speed = 3 + i;
-                    var enemy = new Enemy(100, 1, 2, speed, 0, EnemyPos,  nodeEnemy,nodeBase,3,  TileSize, GameObjects.Enemy, _gridWithOperators);
+                    var enemy = new Enemy(100, 1, 2, speed, 0, _enemyPos,  nodeEnemy,nodeBase,3,  TileSize, GameObjects.Enemy, _gridWithOperators);
                     enemysToSpawn.Add(enemy);
                 }
                 AddEnemy(enemysToSpawn);
@@ -265,8 +288,8 @@ public class GameCycle: IGameplayModel
                 {
                     var speed = 3 + i;
                     var sniper = new SniperEnemy(100, 1, 2,
-                        4, 0,  EnemyPos, nodeEnemy,nodeBase,10, GameObjects.EnemySniper, 0, 40, _gridWithOperators);
-                    var enemy = new Enemy(100, 1, 2, speed, 0, EnemyPos,  nodeEnemy,nodeBase,3,  TileSize, GameObjects.Enemy, _gridWithOperators);
+                        4, 0,  _enemyPos, nodeEnemy,nodeBase,10, GameObjects.EnemySniper, 0, 40, _gridWithOperators);
+                    var enemy = new Enemy(100, 1, 2, speed, 0, _enemyPos,  nodeEnemy,nodeBase,3,  TileSize, GameObjects.Enemy, _gridWithOperators);
                     enemysToSpawn.Add(sniper);
                     enemysToSpawn.Add(enemy);
                 }
@@ -280,7 +303,7 @@ public class GameCycle: IGameplayModel
     {
         foreach (var enemys in enemysToSpawn)
         {
-            enemiesToSpawn.Enqueue(enemys);
+            _enemiesToSpawn.Enqueue(enemys);
         }
         
     }
@@ -289,17 +312,16 @@ public class GameCycle: IGameplayModel
     {
         var getCharacterToSpawn = _operators[charactere];
         if (!IsMousePositionOnTileMap(position) || Currency < getCharacterToSpawn.Currency || getCharacterToSpawn.IsSpawned) return;
-        
-        position.X = (int) position.X / TileSize;
-        position.Y = (int) position.Y / TileSize;
 
-        if (getCharacterToSpawn.isSniper && _wallCoordinats.Contains(position.ToPoint()))
+        var tiledPos = new Vector2((int)position.X / TileSize, (int)position.Y / TileSize);
+
+        if (getCharacterToSpawn.IsSniper && _wallCoordinats.Contains(tiledPos.ToPoint()))
         {
-            AddSpawnCharachters(getCharacterToSpawn,position, charactere);
+            AddSpawnCharachters(getCharacterToSpawn,tiledPos, charactere);
         }
-        else if(!_wallCoordinats.Contains(position.ToPoint()) && !getCharacterToSpawn.isSniper)
+        else if(!_wallCoordinats.Contains(tiledPos.ToPoint()) && !getCharacterToSpawn.IsSniper)
         {
-            AddSpawnCharachters(getCharacterToSpawn,position,charactere);
+            AddSpawnCharachters(getCharacterToSpawn,tiledPos,charactere);
         }
     }
 
@@ -312,7 +334,7 @@ public class GameCycle: IGameplayModel
         charachter.Pos = position * TileSize;
         charachter.IsSpawned = true;
         Objects.Add(_currentId, charachter);
-        activeOperators.Add(charachter);
+        _activeOperators.Add(charachter);
         charachter._grid = _gridWithEnemys;
         if (charachter is not IHasBar health) return;
         health.CurrentHealth = _opertorsHp[operatorType];
@@ -321,14 +343,11 @@ public class GameCycle: IGameplayModel
     }
     private bool IsMousePositionOnTileMap(Vector2 mousePosition)
     {
-        var tileMapX = 0;
-        var tileMapY = 0;
-        mousePosition.X = (int) mousePosition.X / TileSize;
-        mousePosition.Y = (int) mousePosition.Y / TileSize;
+        var tiledMousPos = new Vector2((int)mousePosition.X / TileSize, (int)mousePosition.Y / TileSize);
 
-        var tileMapWidth = width;
-        var tileMapHeight = height;
-        return mousePosition.X >= tileMapX && mousePosition.X  < tileMapX + tileMapWidth  &&
-               mousePosition.Y >= tileMapY && mousePosition.Y < tileMapY + tileMapHeight ;
+        var tileMapWidth = _width;
+        var tileMapHeight = _height;
+        return tiledMousPos.X >= 0 && tiledMousPos.X  < tileMapWidth  &&
+               tiledMousPos.Y >= 0 && tiledMousPos.Y <  tileMapHeight ;
     }
 }
