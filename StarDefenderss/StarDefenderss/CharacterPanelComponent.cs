@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 
 namespace StarDefenderss;
 
@@ -12,20 +10,19 @@ public class CharacterMenu
     private List<GameObjects> character = new ();
     private Dictionary<GameObjects, Texture2D> _textures = new();
     private int selectedCharacterIndex;
-    private HashSet<GameObjects> _spawnedCharacters;
     public event EventHandler<CharacterSpawnedEventArgs> CharacterSelected;
     private const int characterSize = 50;
     private int yPos;
     
-    public CharacterMenu(List<GameObjects> characters,Dictionary<GameObjects, Texture2D> textures, HashSet<GameObjects> spawnedCharactets)
+    public CharacterMenu(List<GameObjects> characters,Dictionary<GameObjects, Texture2D> textures)
     {
-        _spawnedCharacters = new HashSet<GameObjects>();
         _textures = textures;
         character = characters;
         selectedCharacterIndex = -1;
+        
     }
 
-    public void Draw(SpriteBatch spriteBatch, int y)
+    public void Draw(SpriteBatch spriteBatch, int y, HashSet<GameObjects> spawnedCharacters)
     {
         int x = 0;
         yPos = y;
@@ -33,7 +30,7 @@ public class CharacterMenu
         for (var i = 0; i < character.Count; i++)
         {
             var color = Color.White;
-            if (_spawnedCharacters.Contains(character[i]))
+            if (spawnedCharacters.Contains(character[i]))
                 color = Color.Red;
             else if (i == selectedCharacterIndex)
             {

@@ -9,6 +9,7 @@ public class PlayerSniper:Character, IObject, IAttackable, IOperator
     public int CurrentBlock { get; set; }
     public float AttackRange { get; }
     public override int Attack { get; set; }
+    public bool isOnWall { get; set; }
     public Grid _grid { get; set; }
     public override int Defense { get; set; }
     public override int DamageResistance { get; set; }
@@ -17,20 +18,21 @@ public class PlayerSniper:Character, IObject, IAttackable, IOperator
     public float Scale { get; set; }
     public float Rotation { get; set; }
     public Vector2 Pos { get; set; }
-    public override bool IsSpawned { get; set; }
     public bool isSniper { get; }
+    public override bool IsSpawned { get; set; }
     public PlayerSniper(int healthPoints, int attack, int defense, int speed, int damageResistance, Vector2 position, int guaranteedAttack, 
         GameObjects objectType, int curency) : base(healthPoints, attack, defense, speed, damageResistance, position, guaranteedAttack, objectType, curency, Color.Blue)
     {
         Color = Color.White;
-        Scale = 1f;
-        MaxHealth = 100;
-        CurrentHealth = 100;
+        Scale = 0.5f;
+        MaxHealth = healthPoints;
+        CurrentHealth = healthPoints;
         AttackRange = 150;
         Attack = 100;
         MaxMana = 100;
         CurrentMana = 0;
         isSniper = true;
+        isOnWall = isSniper;
         BlockCount = 1;
     }
     public void Update(GameTime gameTime)
@@ -45,7 +47,6 @@ public class PlayerSniper:Character, IObject, IAttackable, IOperator
         }
     }
     
-
     public void ActivUltimate()
     {
     }

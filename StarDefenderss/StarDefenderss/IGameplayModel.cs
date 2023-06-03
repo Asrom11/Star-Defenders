@@ -12,27 +12,9 @@ public interface IGameplayModel
 
     int PlayerLives { get;  }
     public Dictionary<int, IObject> Objects { get; set; }
-    void Initialize();   
+    void Initialize(string levelName);   
     void Update(GameTime gameTime);
-
-    private void MoveEnemy(GameTime gameTime)
-    {
-    }
-
     void SpawnCharacter(Vector2 position, GameObjects character);
     void TryActivateUltimate(Point pointClick);
 
-}
-
-
-public class GameplayEventArgs : EventArgs
-{
-    public Dictionary<int, IObject> Objects { get; set; }
-    public int Currencys { get; set; }
-    public int PlayerLives { get; set; }
-}
-
-public class GamePlayStatus : EventArgs
-{
-    public bool GameIsWin { get; set; }
 }

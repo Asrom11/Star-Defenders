@@ -16,6 +16,7 @@ public class SniperEnemy: Character, IObject, IAttackable,IEnemy
     public override int GuaranteedAttack { get; set; }
     public override int Currency { get; set; }
     public override bool IsSpawned { get; set; }
+    public bool isOnWall { get; set; }
     public float Scale { get; set; }
     public float Rotation { get; set; }
     public Vector2 Pos { get; set; }
@@ -33,13 +34,14 @@ public class SniperEnemy: Character, IObject, IAttackable,IEnemy
         Color = Color.White;
         _path = PathFinding.AStar(start,end);
         _path.RemoveAt(0);
-        Scale = 1f;
+        Scale =1;
         AttackRange = 1000;
         Attack = 100;
         _attackTimeCounter = 0;
         _distanceAtackTime = true;
         _canMove = true;
         _grid = grid;
+        DamageResistance = 1;
 
     }
         
@@ -61,13 +63,14 @@ public class SniperEnemy: Character, IObject, IAttackable,IEnemy
                 continue;
             if (Vector2.Distance(Pos, obj.Pos) > _tileSize && _distanceAtackTime)
             {
-                obj.TakeDamage(10);
+                obj.TakeDamage(1);
                 _distanceAtackTime = false;
                 _canMove = false;
                 return;
             }
 
             if (!(Vector2.Distance(Pos, obj.Pos) < _tileSize)) continue;
+            
             obj.TakeDamage(1);
             return;
         }
@@ -91,7 +94,7 @@ public class SniperEnemy: Character, IObject, IAttackable,IEnemy
     
     public void TakeDamage(int damage)
     {
-        
+        var damageFromPlayer = (damage * DamageResistance);
+        CurrentHealth -= damageFromPlayer >= 0 ? damageFromPlayer : GuaranteedAttack;
     }
-
 }

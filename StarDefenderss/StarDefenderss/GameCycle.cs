@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Timers;
 using Microsoft.Xna.Framework;
@@ -23,12 +24,13 @@ public class GameCycle: IGameplayModel
     private HashSet<Point> _wallCoordinats = new ();
     public event EventHandler<GameplayEventArgs> Updated;
     public int Currency { get; set; }
+    private HashSet<GameObjects> _spawnedCharacters = new (); 
     private Dictionary<GameObjects, IOperator> _operators;
     private Dictionary<GameObjects, IEnemy> _enemies;
-    private HashSet<IOperator> spawnedOperators = new ();
+    private Dictionary<GameObjects, int> _opertorsHp = new();
+    private HashSet<IOperator> activeOperators = new ();
     private HashSet<IEnemy> spawnedEnemys = new ();
-
-    private Timer _spawnTimer;
+    
     private Timer _currencyTimer;
     private int _currentId = 1;
     private Vector2 BasePos;
@@ -41,21 +43,29 @@ public class GameCycle: IGameplayModel
     private  int height;
     private GameObjects selectedDirection = 0;
     private bool isEnd;
-    public void Initialize()
+    private int spawnDelay = 1000;
+    private int timeSinceLastSpawn = 0;
+    private Queue<IEnemy> enemiesToSpawn = new ();
+    public void Initialize(string levelName)
     {
         PlayerLives = 3;
-        var textMap = MapLoader.Load(LevelName.LevelFirst);
+        var textMap = File.ReadAllText("Maps/" + levelName);
         var lines = textMap.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
         Objects = new Dictionary<int, IObject>();
         width = lines[0].Length;
         height = lines.Length;
         InitializeMap(lines);
         InitializeGraph(lines);
-        _operators = new Dictionary<GameObjects, IOperator>();
-        _operators.Add(GameObjects.FirstOp, new Operator(100,10,1,1,1, new Vector2(0,0), 1,100, GameObjects.FirstOp));
-        _operators.Add(GameObjects.TankOp, new TankOperator(100,10,1,1,1, new Vector2(0,0), 1, 100,GameObjects.TankOp));
-        _operators.Add(GameObjects.Sniper, new PlayerSniper(100,100,100,0,100,new Vector2(0,0),10,GameObjects.Sniper, 100));
+
+        _opertorsHp.Add(GameObjects.FirstOp, 500);
+        _opertorsHp.Add(GameObjects.TankOp, 1000);
+        _opertorsHp.Add(GameObjects.Sniper, 200);
         
+        _operators = new Dictionary<GameObjects, IOperator>();
+        _operators.Add(GameObjects.FirstOp, new Operator(_opertorsHp[GameObjects.FirstOp],10,1,1,1, new Vector2(0,0), 1,100, GameObjects.FirstOp));
+        _operators.Add(GameObjects.TankOp, new TankOperator(_opertorsHp[GameObjects.TankOp],10,1,1,1, new Vector2(0,0), 1, 100,GameObjects.TankOp));
+        _operators.Add(GameObjects.Sniper, new PlayerSniper(_opertorsHp[GameObjects.Sniper],100,100,0,100,new Vector2(0,0),10,GameObjects.Sniper, 100));
+
         _gridWithOperators = new Grid(TileSize);
         _gridWithEnemys = new Grid(TileSize);
         _currencyTimer = new Timer(currencyInterval);
@@ -63,7 +73,16 @@ public class GameCycle: IGameplayModel
         _currencyTimer.AutoReset = true;
         _currencyTimer.Start();
     }
-
+    private void RealeseEnemyWave()
+    {
+        if (enemiesToSpawn.Count <= 0) return;
+        var enemy = enemiesToSpawn.Dequeue();
+        _currentId++;
+        enemy.UnicId = _currentId;
+        spawnedEnemys.Add(enemy);
+        _gridWithEnemys.Add((IAttackable)enemy);
+        Objects.Add(_currentId, enemy);
+    }
     private void InitializeMap(string[] lines)
     {
         for (var y = 0; y < lines.Length; y++)
@@ -121,9 +140,25 @@ public class GameCycle: IGameplayModel
         _gridWithEnemys.Clear();
         MoveEnemy(gameTime);
         UpdatePlayer(gameTime);
-        if (CheckEnemysGrid())
+        if (CheckEnemysGrid() && enemiesToSpawn.Count == 0 )
             SpawnEnemy();
-        Updated.Invoke(this, new GameplayEventArgs { Objects = this.Objects, Currencys = Currency, PlayerLives = PlayerLives});
+        timeSinceLastSpawn += gameTime.ElapsedGameTime.Milliseconds;
+        if (timeSinceLastSpawn >= spawnDelay)
+        {
+            RealeseEnemyWave();
+            timeSinceLastSpawn = 0;
+        }
+
+        if (waveCount == 3 && enemiesToSpawn.Count == 0 && spawnedEnemys.Count == 0)
+        {
+            isEnd = true;
+            GameStatus.Invoke(this, new GamePlayStatus
+            {
+                GameIsWin = true
+            });
+        }
+        Updated.Invoke(this, new GameplayEventArgs { Objects = this.Objects, Currencys = Currency, 
+            PlayerLives = PlayerLives, spawnedCharacters = _spawnedCharacters});
     }
 
     private bool CheckEnemysGrid()
@@ -142,11 +177,13 @@ public class GameCycle: IGameplayModel
                 spawnedEnemys.Remove(obj);
                 continue;
             }
-            if ( !(Vector2.Distance(obj.Pos,BasePos) > 4f))
+            
+            if ( !(Vector2.Distance(obj.Pos,BasePos) > 5f))
             {
                 PlayerLives--;
                 spawnedEnemys.Remove(obj);
                 Objects.Remove(obj.UnicId);
+                
                 if (PlayerLives <= 0)
                 {
                     isEnd = true;
@@ -173,7 +210,7 @@ public class GameCycle: IGameplayModel
     
     private void UpdatePlayer(GameTime gameTime)
     {
-        foreach (var obj in spawnedOperators)
+        foreach (var obj in activeOperators)
         {
             var currentPlayer = obj as Character;
             
@@ -181,8 +218,9 @@ public class GameCycle: IGameplayModel
             {
                 obj.IsSpawned = false;
                 Objects.Remove(obj.UnicId);
+                _spawnedCharacters.Remove(obj.ImageId);
                 _gridWithOperators.Remove(obj as IAttackable);
-                spawnedOperators.Remove(obj);
+                activeOperators.Remove(obj);
             }
             obj.Update(gameTime);
         }
@@ -204,7 +242,6 @@ public class GameCycle: IGameplayModel
     {
         var nodeEnemy = _nodes[(int)(EnemyPos.X / TileSize), (int)(EnemyPos.Y / TileSize)];
         var nodeBase = _nodes[(int)BasePos.X / TileSize, (int)BasePos.Y / TileSize];
-        var bestPath = PathFinding.AStar(nodeEnemy, nodeBase);
         waveCount++;
         var enemysToSpawn = new List<IEnemy>();
         
@@ -224,7 +261,7 @@ public class GameCycle: IGameplayModel
 
             case 2:
             {
-                for (var i = 0; i < 2; i++)
+                for (var i = 0; i < 1; i++)
                 {
                     var speed = 3 + i;
                     var sniper = new SniperEnemy(100, 1, 2,
@@ -237,27 +274,15 @@ public class GameCycle: IGameplayModel
                 break;
             }
         }
-
-        if (waveCount == 3)
-        {
-            isEnd = true;
-            GameStatus.Invoke(this, new GamePlayStatus
-            {
-                GameIsWin = true
-            });
-        }
     }
 
     private void AddEnemy(List<IEnemy> enemysToSpawn)
     {
-        foreach (var enemys in  enemysToSpawn )
+        foreach (var enemys in enemysToSpawn)
         {
-            _currentId++;
-            enemys.UnicId = _currentId;
-            spawnedEnemys.Add(enemys);
-            _gridWithEnemys.Add((IAttackable)enemys);
-            Objects.Add(_currentId,enemys);
+            enemiesToSpawn.Enqueue(enemys);
         }
+        
     }
     
     public void SpawnCharacter(Vector2 position, GameObjects charactere)
@@ -270,24 +295,27 @@ public class GameCycle: IGameplayModel
 
         if (getCharacterToSpawn.isSniper && _wallCoordinats.Contains(position.ToPoint()))
         {
-            AddSpawnCharachters(getCharacterToSpawn,position);
+            AddSpawnCharachters(getCharacterToSpawn,position, charactere);
         }
         else if(!_wallCoordinats.Contains(position.ToPoint()) && !getCharacterToSpawn.isSniper)
         {
-            AddSpawnCharachters(getCharacterToSpawn,position);
+            AddSpawnCharachters(getCharacterToSpawn,position,charactere);
         }
     }
 
-    private void AddSpawnCharachters(IOperator charachter, Vector2 position)
+    private void AddSpawnCharachters(IOperator charachter, Vector2 position,GameObjects operatorType)
     {
         Currency -= charachter.Currency;
+        _spawnedCharacters.Add(charachter.ImageId);
         _currentId++;
         charachter.UnicId = _currentId;
         charachter.Pos = position * TileSize;
         charachter.IsSpawned = true;
         Objects.Add(_currentId, charachter);
-        spawnedOperators.Add(charachter);
+        activeOperators.Add(charachter);
         charachter._grid = _gridWithEnemys;
+        if (charachter is not IHasBar health) return;
+        health.CurrentHealth = _opertorsHp[operatorType];
         if (charachter is not IAttackable attackableCharacter) return;
         _gridWithOperators.Add(attackableCharacter);
     }
@@ -303,9 +331,4 @@ public class GameCycle: IGameplayModel
         return mousePosition.X >= tileMapX && mousePosition.X  < tileMapX + tileMapWidth  &&
                mousePosition.Y >= tileMapY && mousePosition.Y < tileMapY + tileMapHeight ;
     }
-}
-public class CharacterSpawnedEventArgs : EventArgs
-{
-    public GameObjects SpawnedCharacter { get; set; }
-    public Vector2 Position { get; set; }
 }

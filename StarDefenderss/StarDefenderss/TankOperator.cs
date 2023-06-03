@@ -16,6 +16,7 @@ public class TankOperator: Character, IObject, IAttackable,IOperator
     public override int DamageResistance { get; set; }
     public override int GuaranteedAttack { get; set; }
     public override int Currency { get; set; }
+    public bool isOnWall { get; set; }
     public float Scale { get; set; }
     public float Rotation { get; set; }
     public Color Color { get; set; }
@@ -30,12 +31,14 @@ public class TankOperator: Character, IObject, IAttackable,IOperator
         Scale = 1f;
         MaxMana = 100;
         BlockCount = 4;
-        MaxHealth = 100;
+        MaxHealth = healthPoints;
+        CurrentHealth = healthPoints;
     }
     public void Update(GameTime gameTime)
     {
         CurrentMana = CurrentMana + 10 > 100 ? 100 : CurrentMana + 10;
         var nearbyObjects = _grid.GetNearbyObjects(Pos, AttackRange);
+        CurrentBlock = 0;
         foreach (var obj in nearbyObjects)
         {
             obj.TakeDamage(Attack);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -20,10 +21,10 @@ public class GameCycleView : Game, IGameplayView
     private SpriteBatch _spriteBatch;
     private float elapsedTime;
     private SpriteFont font;
-    private HashSet<GameObjects> spawnedCharacters;
     private Texture2D _blankTexture;
     private bool GameStatus;
     private bool isDone;
+    private HashSet<GameObjects> _spawnedCharacters;
     public event EventHandler<CycleHasFinished> CycleFinished;
     public event EventHandler<ActivateUltimate> ActivateUltimate;
     public event EventHandler<CharacterSpawnedEventArgs> CharacterSpawned;
@@ -34,6 +35,7 @@ public class GameCycleView : Game, IGameplayView
         _graphics = new GraphicsDeviceManager(this);
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
+        _spawnedCharacters = new HashSet<GameObjects>();
     }
 
     protected override void Initialize()
@@ -65,7 +67,7 @@ public class GameCycleView : Game, IGameplayView
         operators.Add(GameObjects.FirstOp);
         operators.Add(GameObjects.TankOp);
         operators.Add(GameObjects.Sniper);
-        characterMenu = new CharacterMenu(operators,_textures,spawnedCharacters);
+        characterMenu = new CharacterMenu(operators,_textures);
     }
 
     protected override void Update(GameTime gameTime)
@@ -117,7 +119,7 @@ public class GameCycleView : Game, IGameplayView
             }
         }
         
-        characterMenu.Draw(_spriteBatch, GraphicsDevice.Viewport.Height);
+        characterMenu.Draw(_spriteBatch, GraphicsDevice.Viewport.Height,_spawnedCharacters);
         _spriteBatch.DrawString(font, $"Lives: {playerLives}",
             new Vector2(GraphicsDevice.Viewport.Width - 150, GraphicsDevice.Viewport.Height - 50), Color.White);
         _spriteBatch.DrawString(font, $"Currency: {currency}",
@@ -177,11 +179,12 @@ public class GameCycleView : Game, IGameplayView
     }
 
 
-    public void LoadGameCycleParameters(Dictionary<int, IObject> Objects, int currency, int PlayerLives)
+    public void LoadGameCycleParameters(Dictionary<int, IObject> Objects, int currency, int PlayerLives, HashSet<GameObjects> spawnedCharacters)
     {
         _objects = Objects;
         this.currency = currency;
         playerLives = PlayerLives;
+        _spawnedCharacters = spawnedCharacters;
     }
 
     public void SetGameStatus(bool GameStatus)

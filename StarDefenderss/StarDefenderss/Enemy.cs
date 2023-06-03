@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace StarDefenderss;
 
-public class Enemy: Character, IObject, IAttackable,IEnemy
+public class Enemy: Character,  IAttackable,IEnemy
 {
     public override int Speed { get; set; }
     public int BlockCount { get; set; }
@@ -24,6 +24,7 @@ public class Enemy: Character, IObject, IAttackable,IEnemy
     public float Rotation { get; set; }
     public Color Color { get; set; }
     public Vector2 Pos { get; set; }
+    public bool isOnWall { get; set; }
     public override bool IsSpawned { get; set; }
     private Vector2 _basePos;
     private Node _startNode;
@@ -49,8 +50,6 @@ public class Enemy: Character, IObject, IAttackable,IEnemy
         CurrentHealth -= damageFromPlayer >= 0 ? damageFromPlayer : GuaranteedAttack;
     }
     
-    // todo character.BlocksPath т.к ограничение на блок
-
     public void Update(GameTime gameTime)
     {
         if (_path is not { Count: > 0 } ) return;
@@ -64,7 +63,7 @@ public class Enemy: Character, IObject, IAttackable,IEnemy
         
         foreach (var obj in nearbyObjects)
         {   
-            if (obj.CurrentBlock >= obj.BlockCount)
+            if (obj.CurrentBlock >= obj.BlockCount || obj.isOnWall)
                 continue;
             obj.CurrentBlock++;
             obj.TakeDamage(0);

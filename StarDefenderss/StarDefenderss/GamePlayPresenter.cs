@@ -20,7 +20,7 @@ public class GameplayPresenter
         _gameplayView.CharacterSpawned += OnCharacterSpawned;
         _gameplayView.ActivateUltimate += OnUltimateUsed;
         _gameplayModel.GameStatus += OnGameStatus;
-        _gameplayModel.Initialize();
+        _gameplayModel.Initialize("FirstLevel.txt");
     }
 
     private void OnGameStatus(object sender, GamePlayStatus e)
@@ -29,7 +29,7 @@ public class GameplayPresenter
     }
     private void ModelViewUpdate(object sender, GameplayEventArgs e)
     {
-        _gameplayView.LoadGameCycleParameters(e.Objects,e.Currencys,e.PlayerLives);
+        _gameplayView.LoadGameCycleParameters(e.Objects,e.Currencys,e.PlayerLives,e.spawnedCharacters);
     }
 
     private void ViewModelUpdate(object sender, CycleHasFinished e)

@@ -16,6 +16,7 @@ public class EnemyDrone: Character, IAttackable,IEnemy
     public override int GuaranteedAttack { get; set; }
     public override int Currency { get; set; }
     public float Scale { get; set; }
+    public bool isOnWall { get; set; }
     public float Rotation { get; set; }
     public Vector2 Pos { get; set; }
     public override bool IsSpawned { get; set; }

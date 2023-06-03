@@ -2,7 +2,7 @@ using Microsoft.Xna.Framework;
 
 namespace StarDefenderss;
 
-public class Operator: Character, IObject, IAttackable, IOperator
+public class Operator: Character, IAttackable, IOperator
 {
     public override int Speed { get; set; }
     public int BlockCount { get; set; }
@@ -19,6 +19,7 @@ public class Operator: Character, IObject, IAttackable, IOperator
     public Vector2 Pos{ get; set; }
     public override bool IsSpawned { get; set; }
     public Grid _grid { get; set; }
+    public bool isOnWall { get; set; }
     public bool isSniper { get; }
 
     public Operator(int healthPoints, int attack, int defense, int speed, int damageResistance,
@@ -27,8 +28,8 @@ public class Operator: Character, IObject, IAttackable, IOperator
     {
         Color = Color.White;
         Scale = 1f;
-        MaxHealth = 100;
-        CurrentHealth = 100;
+        MaxHealth = healthPoints;
+        CurrentHealth = healthPoints;
         AttackRange = 1;
         Attack = 100;
         MaxMana = 100;
@@ -40,7 +41,7 @@ public class Operator: Character, IObject, IAttackable, IOperator
         var damageFromPlayer = damage;
         CurrentHealth -= damageFromPlayer >= 0 ? damageFromPlayer : GuaranteedAttack;
     }
-    
+
     public void Update(GameTime gameTime)
     {
         var nearbyObjects = _grid.GetNearbyObjects(Pos, 80);

@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 
 namespace StarDefenderss;
 
@@ -11,18 +9,8 @@ public interface IGameplayView
     event EventHandler<CharacterSpawnedEventArgs> CharacterSpawned;
      event EventHandler<ActivateUltimate> ActivateUltimate;
 
-    void LoadGameCycleParameters(Dictionary<int, IObject> Objects, int currency, int PlayerLives);
+    void LoadGameCycleParameters(Dictionary<int, IObject> Objects, int currency, int PlayerLives,HashSet<GameObjects> spawnedCharacters);
 
     void SetGameStatus(bool GameStatus);
     void Run();
-}
-
-public class CycleHasFinished :EventArgs
-{
-    public GameTime GameTime { get; set; } 
-}
-
-public class ActivateUltimate : EventArgs
-{
-    public Point Position;
 }

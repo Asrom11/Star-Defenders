@@ -16,9 +16,5 @@ public class Path: IObject
     {
         Scale = 1f;
     }
-    public void Update(GameTime gameTime)
-    {
-    }
-
-    public Grid _grid { get; set; }
+    
 }

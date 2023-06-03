@@ -37,7 +37,6 @@ public static class MapGenerator
             Pos = new Vector2(x,
                 y ),
             ImageId = ImageId,
-            isEnemyBase = isEnemyBase,
             Color = color
         };
     }

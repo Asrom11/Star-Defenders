@@ -22,11 +22,4 @@ public class Wall: IObject
         Scale = 1f;
     }
     public Vector2 Pos { get; set; }
-    public bool IsSpawned { get; set; }
-
-    public void Update(GameTime gameTime)
-    {
-    }
-
-    public Grid _grid { get; set; }
 }

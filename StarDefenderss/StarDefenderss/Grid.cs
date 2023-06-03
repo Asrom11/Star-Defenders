@@ -72,13 +72,3 @@ public class Grid
     }
 
 }
-public interface IAttackable:  IObject
-{
-    int BlockCount { get; set; }
-    int CurrentBlock { get; set; }
-    float AttackRange { get; }
-    int Attack { get; }
-    void TakeDamage(int damage);
-
-     Grid _grid { get; set; }
-}
