@@ -61,7 +61,7 @@ public class TankOperator: Character, IAttackable,IOperator
     public void Update(GameTime gameTime)
     {
         if (!ultimateTimer.Enabled)
-            CurrentMana = CurrentMana + 10 > 100 ? 100 : CurrentMana + 10;
+            CurrentMana = CurrentMana + 1.5 > 100 ? 100 : CurrentMana + 1;
         var nearbyObjects = _grid.GetNearbyObjects(Pos, AttackRange);
         CurrentBlock = 0;
         foreach (var obj in nearbyObjects)

@@ -64,7 +64,7 @@ public class Vanguard:Character, IAttackable, IOperator
     public void Update(GameTime gameTime)
     {
         if (!ultimateTimer.Enabled)
-            CurrentMana = CurrentMana + 10 > 100 ? 100 : CurrentMana + 10;
+            CurrentMana = CurrentMana + 1.5 > 100 ? 100 : CurrentMana + 1;
         CurrentBlock = 0;
         var nearbyObjects = _grid.GetNearbyObjects(Pos, AttackRange);
         foreach (var obj in nearbyObjects)

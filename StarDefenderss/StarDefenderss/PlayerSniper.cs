@@ -60,7 +60,7 @@ public class PlayerSniper:Character, IAttackable, IOperator
         
         var nearbyObjects = _grid.GetNearbyObjects(Pos, AttackRange);
         if (!ultimateTimer.Enabled)
-            CurrentMana = CurrentMana + 10 > 100 ? 100 : CurrentMana + 10;
+            CurrentMana = CurrentMana + 1.5 > 100 ? 100 : CurrentMana + 1;
         foreach (var obj in nearbyObjects)
         {
             _attackTimeCounter += gameTime.ElapsedGameTime.TotalSeconds;
