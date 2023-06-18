@@ -35,8 +35,8 @@ public class GameCycle: IGameplayModel
     private Vector2 _enemyPos;
     private Node[,] _nodes;
     private int _waveCount;
-    private const float currencyInterval = 100;
-    private const int valuetAdd = 5;
+    private const float currencyInterval = 1000;
+    private const int valuetAdd = 1;
     private  int _width;
     private  int _height;
     private bool _isEnd;
@@ -53,15 +53,20 @@ public class GameCycle: IGameplayModel
         InitializeMap(lines);
         InitializeGraph(lines);
 
-        _opertorsHp.Add(GameObjects.FirstOp, 500);
-        _opertorsHp.Add(GameObjects.TankOp, 1000);
-        _opertorsHp.Add(GameObjects.Sniper, 200);
+        _opertorsHp.Add(GameObjects.FirstOp, 1410);
+        _opertorsHp.Add(GameObjects.TankOp, 1728);
+        _opertorsHp.Add(GameObjects.Sniper, 1016);
+        _opertorsHp.Add(GameObjects.Healer, 1076);
+        _opertorsHp.Add(GameObjects.Vanguard,996);
         
         _operators = new Dictionary<GameObjects, IOperator>();
-        _operators.Add(GameObjects.FirstOp, new Operator(_opertorsHp[GameObjects.FirstOp],100,15,0,15, new Vector2(0,0), 1,100, GameObjects.FirstOp));
-        _operators.Add(GameObjects.TankOp, new TankOperator(_opertorsHp[GameObjects.TankOp],50,1,0,15, new Vector2(0,0), 1, 100,GameObjects.TankOp));
-        _operators.Add(GameObjects.Sniper, new PlayerSniper(_opertorsHp[GameObjects.Sniper],25,30,0,100,new Vector2(0,0),10,GameObjects.Sniper, 100));
-
+        _operators.Add(GameObjects.FirstOp, new Operator(_opertorsHp[GameObjects.FirstOp],426,238,0,15, new Vector2(0,0), 10,18, GameObjects.FirstOp));
+        _operators.Add(GameObjects.TankOp, new TankOperator(_opertorsHp[GameObjects.TankOp],295,364,0,15, new Vector2(0,0), 10, 23,GameObjects.TankOp));
+        _operators.Add(GameObjects.Sniper, new PlayerSniper(_opertorsHp[GameObjects.Sniper],305,95,0,100,new Vector2(0,0),10,GameObjects.Sniper, 14));
+        _operators.Add(GameObjects.Healer, new Healer(_opertorsHp[GameObjects.Healer],210,107,0,100,new Vector2(0,0),10,GameObjects.Healer, 18));
+        _operators.Add(GameObjects.Vanguard, new Vanguard(_opertorsHp[GameObjects.Vanguard],299,208,0,15, new Vector2(0,0), 10,11, 
+            GameObjects.Vanguard));
+        
         _gridWithOperators = new Grid(TileSize);
         _gridWithEnemys = new Grid(TileSize);
         _currencyTimer = new Timer(currencyInterval);
@@ -93,7 +98,10 @@ public class GameCycle: IGameplayModel
     }
     private void AddCurrency(object sender, ElapsedEventArgs e)
     {
-        Currency += valuetAdd;
+        if (Currency + valuetAdd >= 99)
+            Currency = 99;
+        else
+            Currency += valuetAdd;
     }
 
     private void InitializeGraph(string[] lines)
@@ -141,6 +149,7 @@ public class GameCycle: IGameplayModel
     public void Update(GameTime gameTime)
     {
         if (_isEnd) return;
+        
         
         _gridWithEnemys.Clear();
         MoveEnemy(gameTime);
@@ -256,6 +265,13 @@ public class GameCycle: IGameplayModel
         foreach (var operators in near)
         {
             if (operators is not IOperator playerOperator) continue;
+
+            if (playerOperator.operatorType == GameObjects.Vanguard)
+            {
+                Currency += 14;
+                playerOperator.ActivUltimate();
+                return;
+            }
             playerOperator.ActivUltimate();
             return;
 
@@ -272,10 +288,10 @@ public class GameCycle: IGameplayModel
         {
             case 1:
             {
-                for (var i = 0; i < 4; i++)
+                for (var i = 0; i < 1; i++)
                 {
                     var speed = 3 + i;
-                    var enemy = new Enemy(100, 1, 2, speed, 0, _enemyPos,  nodeEnemy,nodeBase,3,  TileSize, GameObjects.Enemy, _gridWithOperators);
+                    var enemy = new Enemy(1650, 200, 100, speed, 0, _enemyPos,  nodeEnemy,nodeBase,3,  TileSize, GameObjects.Enemy, _gridWithOperators);
                     enemysToSpawn.Add(enemy);
                 }
                 AddEnemy(enemysToSpawn);
@@ -287,9 +303,9 @@ public class GameCycle: IGameplayModel
                 for (var i = 0; i < 1; i++)
                 {
                     var speed = 3 + i;
-                    var sniper = new SniperEnemy(100, 1, 2,
+                    var sniper = new SniperEnemy(1400, 240, 100,
                         4, 0,  _enemyPos, nodeEnemy,nodeBase,10, GameObjects.EnemySniper, 0, 40, _gridWithOperators);
-                    var enemy = new Enemy(100, 1, 2, speed, 0, _enemyPos,  nodeEnemy,nodeBase,3,  TileSize, GameObjects.Enemy, _gridWithOperators);
+                    var enemy = new Enemy(1650, 200, 100, speed, 0, _enemyPos,  nodeEnemy,nodeBase,3,  TileSize, GameObjects.Enemy, _gridWithOperators);
                     enemysToSpawn.Add(sniper);
                     enemysToSpawn.Add(enemy);
                 }
@@ -335,7 +351,10 @@ public class GameCycle: IGameplayModel
         charachter.IsSpawned = true;
         Objects.Add(_currentId, charachter);
         _activeOperators.Add(charachter);
-        charachter._grid = _gridWithEnemys;
+        if (charachter.IsHealer)
+            charachter._grid = _gridWithOperators;
+        else
+            charachter._grid = _gridWithEnemys;
         if (charachter is not IHasBar health) return;
         health.CurrentHealth = _opertorsHp[operatorType];
         if (charachter is not IAttackable attackableCharacter) return;

@@ -35,6 +35,7 @@ public class EnemyDrone: Character, IAttackable,IEnemy
         this._startPos = new Vector2(_startPos.X, _startPos.Y);
         this._endPos = new Vector2(_endPos.X, _endPos.Y);
         Scale = 1f;
+        IsOnWall = true;
     }
     
     public void Update(GameTime gameTime)
@@ -54,7 +55,10 @@ public class EnemyDrone: Character, IAttackable,IEnemy
     
     public override void TakeDamage(int damage)
     {
-        var damageFromPlayer = damage;
-        CurrentHealth -= damageFromPlayer >= 0 ? damageFromPlayer : GuaranteedAttack;
+        var damageFromEnemy = (damage - (DamageResistance + Defense )) <= 0 ? (int)(damage  * 0.5) + GuaranteedAttack : damage - (DamageResistance  + Defense);
+        CurrentHealth -= damageFromEnemy;
+    }
+    public void Heal(int heal)
+    {
     }
 }

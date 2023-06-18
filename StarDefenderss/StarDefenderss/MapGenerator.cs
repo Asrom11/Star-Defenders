@@ -14,11 +14,11 @@ public static class MapGenerator
         switch (sign)
         {
             case 'T':
-                generatedObject = CreateBase(GameObjects.Base, xTile * TileSize,yTile * TileSize, Color.Red,false);
+                generatedObject = CreateBase(GameObjects.Base, xTile * TileSize,yTile * TileSize, Color.Red);
                 EnemyPos = new Vector2(xTile * TileSize,yTile * TileSize) ;
                 break;
             case 'C':
-                generatedObject = CreateBase(GameObjects.Base, xTile * TileSize,yTile * TileSize, Color.Blue, true);
+                generatedObject = CreateBase(GameObjects.Base, xTile * TileSize,yTile * TileSize, Color.Blue);
                 BasePos = new Vector2(xTile * TileSize,yTile * TileSize);
                 break;
             case 'W':
@@ -30,7 +30,7 @@ public static class MapGenerator
         }
         return generatedObject;
     }
-    private static Base CreateBase(GameObjects ImageId, int x, int y, Color color,bool isEnemyBase)
+    private static Base CreateBase(GameObjects ImageId, int x, int y, Color color)
     {
         return new Base()
         {

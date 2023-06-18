@@ -87,3 +87,10 @@ C:\Users\Admin\RiderProjects\Star-Defenders\StarDefenderss\StarDefenderss\bin\De
 C:\Users\Admin\RiderProjects\Star-Defenders\StarDefenderss\StarDefenderss\bin\Debug\net6.0-windows\Content\EnemyDrone.xnb
 C:\Users\Admin\RiderProjects\Star-Defenders\StarDefenderss\StarDefenderss\bin\Debug\net6.0-windows\Content\backgroundMusic.wma
 C:\Users\Admin\RiderProjects\Star-Defenders\StarDefenderss\StarDefenderss\bin\Debug\net6.0-windows\Content\backgroundMusic.xnb
+C:\Users\Admin\RiderProjects\Star-Defenders\StarDefenderss\StarDefenderss\bin\Debug\net6.0-windows\Content\Healer.xnb
+C:\Users\Admin\RiderProjects\Star-Defenders\StarDefenderss\StarDefenderss\bin\Debug\net6.0-windows\Content\Vanguard.xnb
+C:\Users\Admin\RiderProjects\Star-Defenders\StarDefenderss\StarDefenderss\bin\Debug\net6.0-windows\Content\mapBack.xnb
+C:\Users\Admin\RiderProjects\Star-Defenders\StarDefenderss\StarDefenderss\bin\Debug\net6.0-windows\Content\HealerSizedUp.xnb
+C:\Users\Admin\RiderProjects\Star-Defenders\StarDefenderss\StarDefenderss\bin\Debug\net6.0-windows\Content\SizedUpOp.xnb
+C:\Users\Admin\RiderProjects\Star-Defenders\StarDefenderss\StarDefenderss\bin\Debug\net6.0-windows\Content\SizedUpTank.xnb
+C:\Users\Admin\RiderProjects\Star-Defenders\StarDefenderss\StarDefenderss\bin\Debug\net6.0-windows\Content\SizedUpVanguard.xnb

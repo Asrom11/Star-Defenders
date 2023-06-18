@@ -12,10 +12,14 @@ public class CharacterMenu
     private int selectedCharacterIndex;
     private const int characterSize = 50;
     private int yPos;
-    
-    public CharacterMenu(List<GameObjects> characters,Dictionary<GameObjects, Texture2D> textures)
+    private Dictionary<GameObjects, int> _costs = new();
+    private SpriteFont _font;
+
+    public CharacterMenu(List<GameObjects> characters,Dictionary<GameObjects, Texture2D> textures, Dictionary<GameObjects, int> operatorCost, SpriteFont font)
     {
+        _font = font;
         _textures = textures;
+        _costs = operatorCost;
         character = characters;
         selectedCharacterIndex = -1;
         
@@ -36,6 +40,7 @@ public class CharacterMenu
                 color = Color.Gray;
             }
             spriteBatch.Draw(_textures[character[i]], new Rectangle(x, y, characterSize, characterSize), color);
+            spriteBatch.DrawString(_font, _costs[character[i]].ToString(), new Vector2(x, y - 20), Color.Black);
             x += characterSize;
         }
     }

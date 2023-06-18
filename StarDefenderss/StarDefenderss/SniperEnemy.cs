@@ -69,9 +69,8 @@ public class SniperEnemy: Character, IAttackable,IEnemy
                 return;
             }
 
-            if (!(Vector2.Distance(Pos, obj.Pos) < _tileSize)) continue;
-            
-            obj.TakeDamage(Attack);
+            if (Vector2.Distance(Pos, obj.Pos) > _tileSize || obj.IsOnWall) continue;
+            obj.TakeDamage(5);
             return;
         }
 
@@ -94,7 +93,10 @@ public class SniperEnemy: Character, IAttackable,IEnemy
     
     public override void TakeDamage(int damage)
     {
-        var damageFromPlayer = (damage * DamageResistance);
-        CurrentHealth -= damageFromPlayer >= 0 ? damageFromPlayer : GuaranteedAttack;
+        var damageFromEnemy = (damage - (DamageResistance + Defense )) <= 0 ? (int)(damage  * 0.5) + GuaranteedAttack : damage - (DamageResistance  + Defense);
+        CurrentHealth -= damageFromEnemy;
+    }
+    public void Heal(int heal)
+    {
     }
 }

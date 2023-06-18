@@ -5,6 +5,7 @@ namespace StarDefenderss;
 public interface IOperator: IObject
 {
     bool IsSpawned { get; set; }
+    bool IsHealer { get; }
     Grid _grid { get; set; }
     
     int Currency { get; set; }
@@ -14,6 +15,7 @@ public interface IOperator: IObject
     int TempAttack { get; }
     int TempDefense { get; }
     Timer ultimateTimer { get; }
+    GameObjects operatorType { get;}
     
     void OnUltimateTimerElapsed(object sender, ElapsedEventArgs e){}
 

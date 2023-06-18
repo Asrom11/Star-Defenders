@@ -6,13 +6,16 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
+using StarDefenders;
 
 namespace StarDefenderss;
 
 public class GameCycleView : Game, IGameplayView
 {
     private Dictionary<int, IObject> _objects = new();
+    private Dictionary<GameObjects, int> _operatorsCost = new();
     private Dictionary<GameObjects, Texture2D> _textures = new();
+    private Dictionary<GameObjects, Texture2D> _sizedUpOperators = new();
     private CharacterMenu _characterMenu;
     private GraphicsDeviceManager _graphics;
     private Song backgroundMusic;
@@ -23,7 +26,7 @@ public class GameCycleView : Game, IGameplayView
     private Texture2D _blankTexture;
     private bool _gameStatus;
     private bool _isDone;
-    
+    private Texture2D _backgroundTexture;
     private HashSet<GameObjects> _spawnedCharacters;
     public event EventHandler<CycleHasFinished> CycleFinished;
     public event EventHandler<ActivateUltimate> ActivateUltimate;
@@ -53,6 +56,7 @@ public class GameCycleView : Game, IGameplayView
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
         backgroundMusic = Content.Load<Song>("backgroundMusic");
+        _backgroundTexture = Content.Load<Texture2D>("mapBack");
         _textures.Add(GameObjects.Base, Content.Load<Texture2D>("square"));
         _textures.Add(GameObjects.Enemy, Content.Load<Texture2D>("easyEnemy"));
         _textures.Add(GameObjects.Wall, Content.Load<Texture2D>("Grass"));
@@ -62,15 +66,31 @@ public class GameCycleView : Game, IGameplayView
         _textures.Add(GameObjects.EnemySniper, Content.Load<Texture2D>("EnemySniper"));
         _textures.Add(GameObjects.Sniper, Content.Load<Texture2D>("sniper"));
         _textures.Add(GameObjects.EnemyDrone, Content.Load<Texture2D>("EnemyDrone"));
-        _font = Content.Load<SpriteFont>("Font");
+        _textures.Add(GameObjects.Healer, Content.Load<Texture2D>("Healer"));
+        _textures.Add(GameObjects.Vanguard, Content.Load<Texture2D>("Vanguard"));
         
+        _sizedUpOperators.Add(GameObjects.FirstOp, Content.Load<Texture2D>("SizedUpOp"));
+        _sizedUpOperators.Add(GameObjects.TankOp, Content.Load<Texture2D>("SizedUpTank"));
+        _sizedUpOperators.Add(GameObjects.Vanguard, Content.Load<Texture2D>("SizedUpVanguard"));
+        _sizedUpOperators.Add(GameObjects.Healer, Content.Load<Texture2D>("HealerSizedUp"));
+        _sizedUpOperators.Add(GameObjects.Sniper, Content.Load<Texture2D>("sniper"));
+        _font = Content.Load<SpriteFont>("Font");
+
+        _operatorsCost.Add(GameObjects.FirstOp, 18);
+        _operatorsCost.Add(GameObjects.TankOp, 23);
+        _operatorsCost.Add(GameObjects.Vanguard, 11);
+        _operatorsCost.Add(GameObjects.Healer, 18);
+        _operatorsCost.Add(GameObjects.Sniper, 14);
+
         _blankTexture = new Texture2D(GraphicsDevice, 1, 1);
         _blankTexture.SetData(new[] { Color.White });
         var operators = new List<GameObjects>();
         operators.Add(GameObjects.FirstOp);
         operators.Add(GameObjects.TankOp);
         operators.Add(GameObjects.Sniper);
-        _characterMenu = new CharacterMenu(operators,_textures);
+        operators.Add(GameObjects.Healer);
+        operators.Add(GameObjects.Vanguard);
+        _characterMenu = new CharacterMenu(operators,_sizedUpOperators, _operatorsCost, _font);
     }
 
     protected override void Update(GameTime gameTime)
@@ -78,7 +98,7 @@ public class GameCycleView : Game, IGameplayView
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed ||
             Keyboard.GetState().IsKeyDown(Keys.Escape))
             Exit();
-    
+        
         base.Update(gameTime);
         InputManager.Update();
         _characterMenu.Update();
@@ -91,21 +111,21 @@ public class GameCycleView : Game, IGameplayView
     {
         GraphicsDevice.Clear(Color.CornflowerBlue);
         _spriteBatch.Begin();
+        _spriteBatch.Draw(_backgroundTexture, new Rectangle(0, 0, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight), Color.White);
         foreach (var o in _objects.Values)
         {
-            if (o is IHasBar hasBar)
-            {
-                var position =o.Pos;
-                var currentHealth = hasBar.CurrentHealth;
-                var maxHealth = hasBar.MaxHealth;
-                DrawHealthBar(position, currentHealth, maxHealth, hasBar._HealthColor);
-                if (o is IOperator)
-                    DrawManaBar(position, hasBar.CurrentMana, hasBar.MaxMana);
-            }
             _spriteBatch.Draw(_textures[o.ImageId], o.Pos, null, o.Color, o.Rotation, Vector2.Zero, o.Scale,
                 SpriteEffects.None, 0f);
+            if (o is not IHasBar hasBar) continue;
+            
+            var position =o.Pos;
+            var currentHealth = hasBar.CurrentHealth;
+            var maxHealth = hasBar.MaxHealth;
+            DrawHealthBar(position, currentHealth, maxHealth, hasBar._HealthColor);
+            if (o is IOperator)
+                DrawManaBar(position, hasBar.CurrentMana, hasBar.MaxMana);
         }
-
+        
         switch (_gameStatus)
         {
             case false when _isDone:
@@ -159,7 +179,7 @@ public class GameCycleView : Game, IGameplayView
         var width = 50;
         var height = 5;
         var border = 2;
-        var yOffset = 64;
+        var yOffset = 50;
 
         float healthPercentage = (float)currentHealth / maxHealth;
         var healthBarWidth = (int)(width * healthPercentage);
@@ -172,7 +192,7 @@ public class GameCycleView : Game, IGameplayView
         var width = 50;
         var height = 5;
         var border = 2;
-        var yOffset = 74; 
+        var yOffset = 60; 
 
         float manaPercentage = (float)currentMana / maxMana;
         var manaBarWidth = (int)(width * manaPercentage);

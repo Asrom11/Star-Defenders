@@ -10,5 +10,7 @@ public enum GameObjects
     Path,
     FirstOp,
     TankOp,
-    Sniper
+    Sniper,
+    Healer,
+    Vanguard
 }

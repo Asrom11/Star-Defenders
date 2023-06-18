@@ -7,6 +7,7 @@ public interface IAttackable:  IObject
     float AttackRange { get; }
     int Attack { get; }
     void TakeDamage(int damage);
+    void Heal(int heal);
     
     bool IsOnWall { get; set; }
 
