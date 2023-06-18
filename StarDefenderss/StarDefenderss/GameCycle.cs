@@ -288,7 +288,7 @@ public class GameCycle: IGameplayModel
         {
             case 1:
             {
-                for (var i = 0; i < 1; i++)
+                for (var i = 0; i < 2; i++)
                 {
                     var speed = 3 + i;
                     var enemy = new Enemy(1650, 200, 100, speed, 0, _enemyPos,  nodeEnemy,nodeBase,3,  TileSize, GameObjects.Enemy, _gridWithOperators);
@@ -307,6 +307,8 @@ public class GameCycle: IGameplayModel
                         4, 0,  _enemyPos, nodeEnemy,nodeBase,10, GameObjects.EnemySniper, 0, 40, _gridWithOperators);
                     var enemy = new Enemy(1650, 200, 100, speed, 0, _enemyPos,  nodeEnemy,nodeBase,3,  TileSize, GameObjects.Enemy, _gridWithOperators);
                     enemysToSpawn.Add(sniper);
+                    enemysToSpawn.Add(enemy);
+                    enemy = new Enemy(1650, 200, 100, speed, 0, _enemyPos,  nodeEnemy,nodeBase,3,  TileSize, GameObjects.Enemy, _gridWithOperators);
                     enemysToSpawn.Add(enemy);
                 }
                 AddEnemy(enemysToSpawn);
